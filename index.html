@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Kepala Shift Instalasi Radiologi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        canvas#signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.5rem; width: 100%; height: 200px; touch-action: none; background-color: #f8fafc; }
+        .bell-shake { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased">
+
+    <nav class="bg-blue-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-x-ray text-2xl"></i>
+                    <span class="font-bold text-xl tracking-wider">RADIOLOGI SHIFT DASHBOARD</span>
+                </div>
+                <div class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" class="tab-btn px-4 py-2 rounded bg-blue-700 hover:bg-blue-600 font-medium transition" data-target="dashboard">
+                        <i class="fa-solid fa-house mr-2"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('operan')" class="tab-btn px-4 py-2 rounded hover:bg-blue-600 font-medium transition" data-target="operan">
+                        <i class="fa-solid fa-clipboard-list mr-2"></i> Operan Dinas
+                    </button>
+                    <button onclick="switchTab('suhu')" class="tab-btn px-4 py-2 rounded hover:bg-blue-600 font-medium transition" data-target="suhu">
+                        <i class="fa-solid fa-temperature-half mr-2"></i> Suhu Ruang
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden flex justify-around bg-blue-900 text-sm py-2">
+            <button onclick="switchTab('dashboard')" class="tab-btn p-2 text-white" data-target="dashboard"><i class="fa-solid fa-house"></i> Dash</button>
+            <button onclick="switchTab('operan')" class="tab-btn p-2 text-white opacity-70" data-target="operan"><i class="fa-solid fa-clipboard-list"></i> Operan</button>
+            <button onclick="switchTab('suhu')" class="tab-btn p-2 text-white opacity-70" data-target="suhu"><i class="fa-solid fa-temperature-half"></i> Suhu</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <section id="dashboard" class="tab-content active">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8 text-center border-t-4 border-red-600">
+                <h2 class="text-2xl font-bold mb-4 text-slate-700">Notifikasi Pasien Baru</h2>
+                <button id="btnPanggilan" class="bg-gradient-to-r from-red-600 to-yellow-500 hover:from-red-700 hover:to-yellow-600 text-white font-bold py-6 px-10 rounded-full shadow-xl transform transition hover:scale-105 active:scale-95 flex flex-col items-center justify-center mx-auto w-full md:w-1/2">
+                    <i class="fa-solid fa-bell text-5xl mb-2"></i>
+                    <span class="text-2xl">PENCET JIKA ADA PASIEN BARU</span>
+                </button>
+                <p class="text-sm text-slate-500 mt-3"><i class="fa-solid fa-circle-info"></i> Notifikasi ini akan berbunyi di seluruh perangkat yang membuka dashboard ini.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-slate-700 border-b pb-2 mb-4">
+                        <i class="fa-solid fa-chart-bar text-blue-600 mr-2"></i> Data Real Time Suhu Ruang
+                    </h3>
+                    <canvas id="suhuChart" height="200"></canvas>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center border-b pb-2 mb-4">
+                        <h3 class="text-lg font-bold text-slate-700">
+                            <i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Preview Operan Dinas Terakhir
+                        </h3>
+                        <span id="previewShiftBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Memuat...</span>
+                    </div>
+                    <div id="previewOperanContent" class="text-sm text-slate-600 space-y-3">
+                        <p class="animate-pulse">Mengambil data dari database...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="operan" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold text-slate-700 mb-6 border-b pb-3">Form Input Notulen Operan Dinas</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                        <input type="date" id="opTanggal" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shift</label>
+                        <select id="opShift" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Pilih Shift</option>
+                            <option value="Pagi">Pagi</option>
+                            <option value="Siang">Siang</option>
+                            <option value="Malam">Malam</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notulen Operan Dinas</label>
+                    <textarea id="opCatatan" rows="4" placeholder="Contoh: Kendala alat, Jumlah pasien, Kasus khusus..." class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 bg-slate-100 p-2 rounded">Checklist Monitoring Kepala Shift</h3>
+                    <div class="space-y-2" id="checklistContainer">
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Semua hasil pemeriksaan radiologi telah di cek" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Semua hasil pemeriksaan radiologi telah di cek</span></label>
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Pasien dengan penjadwalan sudah diinput obat & alkes" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Pasien dengan penjadwalan sudah diinput obat & alkes</span></label>
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Perbaikan cepat bila ada kekurangan" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Perbaikan cepat bila ada kekurangan</span></label>
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Ruangan sudah rapih dan bersih" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Ruangan sudah rapih dan bersih</span></label>
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Kontrol mutu radiologi berjalan" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Kontrol mutu radiologi berjalan</span></label>
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Pemantauan mutu alat sudah dilakukan" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Pemantauan mutu alat sudah dilakukan</span></label>
+                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Monitoring hasil radiologi yang belum expertise" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Monitoring hasil radiologi yang belum expertise</span></label>
+                    </div>
+                </div>
+
+                <div class="border-t pt-6 mb-6">
+                    <h3 class="text-md font-bold text-slate-700 mb-4">Tanda Tangan Digital Kepala Shift</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Jelas</label>
+                            <input type="text" id="ttdNama" placeholder="Masukkan Nama" oninput="updateAutoGenerate()" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gelar</label>
+                            <input type="text" id="ttdGelar" placeholder="Contoh: S.Tr.Rad" oninput="updateAutoGenerate()" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Auto Generate TTD Text:</label>
+                        <div class="p-3 bg-gray-100 border rounded font-semibold text-gray-800" id="ttdAutoText">-</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between">
+                            <span>Gambar Tanda Tangan (Opsional)</span>
+                            <button type="button" onclick="signaturePad.clear()" class="text-red-500 hover:text-red-700 text-xs font-bold">Bersihkan Canvas</button>
+                        </label>
+                        <canvas id="signature-pad"></canvas>
+                    </div>
+                </div>
+
+                <button id="btnSimpanOperan" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center transition">
+                    <i class="fa-solid fa-lock mr-2"></i> Simpan & Kunci Data
+                </button>
+            </div>
+        </section>
+
+
+        <section id="suhu" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold text-slate-700 mb-6 border-b pb-3">Input Monitoring Suhu & Kelembaban Ruang</h2>
+                
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Ruangan</label>
+                        <select id="suhuRuangan" class="w-full px-4 py-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-gray-50">
+                            <option value="">-- Pilih Ruangan --</option>
+                            <option value="USG">USG</option>
+                            <option value="ADM RADIOLOGI">ADM RADIOLOGI</option>
+                            <option value="PANORAMIC">PANORAMIC</option>
+                            <option value="MRI">MRI</option>
+                            <option value="RONTGEN 1">RONTGEN 1</option>
+                            <option value="RONTGEN 2">RONTGEN 2</option>
+                            <option value="CT SCAN">CT SCAN</option>
+                            <option value="RUANG RONTGEN MCU">RUANG RONTGEN MCU</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Suhu Ruangan (°C)</label>
+                            <div class="relative">
+                                <input type="number" id="suhuDerajat" step="0.1" class="w-full px-4 py-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10">
+                                <span class="absolute right-3 top-3 text-gray-500 font-bold">°C</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kelembaban (%)</label>
+                            <div class="relative">
+                                <input type="number" id="suhuLembab" class="w-full px-4 py-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10">
+                                <span class="absolute right-3 top-3 text-gray-500 font-bold">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btnSimpanSuhu" class="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center transition">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Update Suhu ke Dashboard
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <audio id="audioAlarm" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <audio id="audioEmergency" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" preload="auto"></audio>
+
+    <script type="module">
+        // Import SDK Firebase v10
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            // Karena hanya ada URL DB di prompt, disarankan mengisi API Key dan Project ID di dashboard Anda kelak
+            databaseURL: "https://ka-shift-new-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Referensi Database
+        const dbSuhu = ref(db, 'suhu_ruang');
+        const dbOperan = ref(db, 'operan_dinas');
+        const dbPanggilan = ref(db, 'panggilan_darurat');
+
+        // ================= 1. LOGIC UI (TAB & SIGNATURE) =================
+        window.switchTab = function(tabId) {
+            // Sembunyikan semua tab
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Tampilkan yang dipilih
+            document.getElementById(tabId).classList.add('active');
+            
+            // Atur class tombol di navbar
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.dataset.target === tabId) {
+                    btn.classList.add('bg-blue-700');
+                    btn.classList.remove('opacity-70');
+                } else {
+                    btn.classList.remove('bg-blue-700');
+                    btn.classList.add('opacity-70');
+                }
+            });
+
+            // Resize signature pad jika tab operan dibuka
+            if(tabId === 'operan') { resizeCanvas(); }
+        }
+
+        // Setup Signature Pad
+        const canvas = document.getElementById('signature-pad');
+        window.signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgba(255, 255, 255, 0)' });
+        function resizeCanvas() {
+            const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear();
+        }
+        window.addEventListener("resize", resizeCanvas);
+
+        window.updateAutoGenerate = function() {
+            const nama = document.getElementById('ttdNama').value;
+            const gelar = document.getElementById('ttdGelar').value;
+            const res = (nama || gelar) ? `${nama}${gelar ? ', ' + gelar : ''}` : '-';
+            document.getElementById('ttdAutoText').innerText = res;
+        }
+
+        // Set default date input today
+        document.getElementById('opTanggal').valueAsDate = new Date();
+
+
+        // ================= 2. ALARM OTOMATIS (10:25, 13:25, 17:00) =================
+        const audioAlarm = document.getElementById('audioAlarm');
+        const audioEmergency = document.getElementById('audioEmergency');
+
+        function checkAutoAlarm() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const targetTimes = ['10:25', '13:25', '17:00'];
+            const todayStr = now.toDateString();
+
+            if (targetTimes.includes(timeStr)) {
+                const alarmKey = `alarm_${timeStr}_${todayStr}`;
+                if (!localStorage.getItem(alarmKey)) {
+                    // Mainkan suara
+                    audioAlarm.play().catch(e => console.log("Audio block oleh browser. User harus interaksi dulu."));
+                    
+                    Swal.fire({
+                        title: '⏰ Waktunya Lapor!',
+                        text: '📢 "Jangan Lupa WA Dokter Spesialis"',
+                        icon: 'warning',
+                        confirmButtonText: '<i class="fa-solid fa-check"></i> Sudah Dilakukan',
+                        confirmButtonColor: '#2563eb',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            localStorage.setItem(alarmKey, 'true');
+                            audioAlarm.pause();
+                            audioAlarm.currentTime = 0;
+                        }
+                    });
+                }
+            }
+        }
+        // Cek setiap 30 detik
+        setInterval(checkAutoAlarm, 30000); 
+
+
+        // ================= 3. MULTI-DEVICE BEL PASIEN BARU =================
+        // Kirim Trigger ke Firebase
+        document.getElementById('btnPanggilan').addEventListener('click', () => {
+            set(dbPanggilan, {
+                waktu: serverTimestamp(),
+                trigger_id: Math.random().toString(36).substring(7)
+            });
+            Swal.fire({
+                toast: true, position: 'top-end', icon: 'success', title: 'Bel Panggilan Dikirim!', showConfirmButton: false, timer: 1500
+            });
+        });
+
+        // Dengarkan Trigger dari Firebase
+        let isFirstLoadPanggilan = true;
+        onValue(dbPanggilan, (snapshot) => {
+            const data = snapshot.val();
+            if (data && !isFirstLoadPanggilan) {
+                // Bunyikan Notifikasi
+                audioEmergency.play().catch(e=>console.log(e));
+                
+                let btnBell = document.getElementById('btnPanggilan');
+                btnBell.classList.add('bell-shake', 'ring-8', 'ring-red-400');
+
+                Swal.fire({
+                    title: '🚨 PASIEN BARU!',
+                    text: 'Terdapat Pasien Baru di Instalasi Radiologi!',
+                    icon: 'info',
+                    confirmButtonText: 'Tutup Notifikasi',
+                    confirmButtonColor: '#dc2626'
+                }).then(() => {
+                    audioEmergency.pause();
+                    audioEmergency.currentTime = 0;
+                    btnBell.classList.remove('bell-shake', 'ring-8', 'ring-red-400');
+                });
+            }
+            isFirstLoadPanggilan = false;
+        });
+
+
+        // ================= 4. LOGIC SUHU & GRAFIK (CHART.JS) =================
+        // Daftar semua ruangan sesuai permintaan
+        const masterRuangan = ['USG', 'ADM RADIOLOGI', 'PANORAMIC', 'MRI', 'RONTGEN 1', 'RONTGEN 2', 'CT SCAN', 'RUANG RONTGEN MCU'];
+        
+        // Inisialisasi Chart
+        const ctx = document.getElementById('suhuChart').getContext('2d');
+        const suhuChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: masterRuangan,
+                datasets: [
+                    { label: 'Suhu (°C)', backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, data: Array(8).fill(0) },
+                    { label: 'Kelembaban (%)', backgroundColor: 'rgba(20, 184, 166, 0.7)', borderColor: 'rgba(20, 184, 166, 1)', borderWidth: 1, data: Array(8).fill(0) }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Simpan Suhu ke DB
+        document.getElementById('btnSimpanSuhu').addEventListener('click', () => {
+            const ruang = document.getElementById('suhuRuangan').value;
+            const suhu = parseFloat(document.getElementById('suhuDerajat').value);
+            const lembab = parseFloat(document.getElementById('suhuLembab').value);
+
+            if(!ruang || isNaN(suhu) || isNaN(lembab)) {
+                Swal.fire('Error', 'Harap lengkapi pilihan ruangan, suhu, dan kelembaban', 'error');
+                return;
+            }
+
+            set(ref(db, 'suhu_ruang/' + ruang), {
+                suhu: suhu,
+                kelembaban: lembab,
+                waktu_update: serverTimestamp()
+            }).then(() => {
+                Swal.fire('Tersimpan!', `Data suhu ruang ${ruang} berhasil diupdate.`, 'success');
+                document.getElementById('suhuDerajat').value = '';
+                document.getElementById('suhuLembab').value = '';
+                document.getElementById('suhuRuangan').value = '';
+            });
+        });
+
+        // Realtime Listener untuk Chart Suhu
+        onValue(dbSuhu, (snapshot) => {
+            const data = snapshot.val() || {};
+            const dataSuhu = [];
+            const dataLembab = [];
+
+            masterRuangan.forEach(ruang => {
+                if(data[ruang]) {
+                    dataSuhu.push(data[ruang].suhu);
+                    dataLembab.push(data[ruang].kelembaban);
+                } else {
+                    // Jika belum diinput tetap tampil 0
+                    dataSuhu.push(0);
+                    dataLembab.push(0);
+                }
+            });
+
+            suhuChart.data.datasets[0].data = dataSuhu;
+            suhuChart.data.datasets[1].data = dataLembab;
+            suhuChart.update();
+        });
+
+
+        // ================= 5. LOGIC INPUT OPERAN DINAS =================
+        document.getElementById('btnSimpanOperan').addEventListener('click', () => {
+            const tgl = document.getElementById('opTanggal').value;
+            const shift = document.getElementById('opShift').value;
+            const catatan = document.getElementById('opCatatan').value;
+            const nama = document.getElementById('ttdNama').value;
+            const gelar = document.getElementById('ttdGelar').value;
+            
+            // Kumpulkan checklist
+            let checklist = [];
+            document.querySelectorAll('#checklistContainer input[type="checkbox"]').forEach(cb => {
+                checklist.push({ nama_tugas: cb.value, status: cb.checked });
+            });
+
+            if(!tgl || !shift || !nama) {
+                Swal.fire('Error', 'Tanggal, Shift, dan Nama Kepala Shift wajib diisi!', 'error');
+                return;
+            }
+
+            // Ambil signature image base64
+            let ttdImage = '';
+            if(!signaturePad.isEmpty()) {
+                ttdImage = signaturePad.toDataURL(); // Format PNG base64
+            }
+
+            const newOperanRef = push(dbOperan);
+            set(newOperanRef, {
+                tanggal: tgl,
+                shift: shift,
+                catatan: catatan,
+                checklist: checklist,
+                kepala_shift: `${nama}${gelar ? ', '+gelar : ''}`,
+                ttd_image: ttdImage,
+                timestamp: serverTimestamp()
+            }).then(() => {
+                Swal.fire('Tersimpan!', 'Operan dinas berhasil disimpan dan dikunci.', 'success');
+                // Reset Form
+                document.getElementById('opCatatan').value = '';
+                document.querySelectorAll('#checklistContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.getElementById('ttdNama').value = '';
+                document.getElementById('ttdGelar').value = '';
+                document.getElementById('ttdAutoText').innerText = '-';
+                signaturePad.clear();
+                switchTab('dashboard'); // Kembali ke dashboard
+            });
+        });
+
+        // Realtime Listener Preview Operan Dinas (Dashboard)
+        onValue(dbOperan, (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById('previewOperanContent');
+            const badge = document.getElementById('previewShiftBadge');
+
+            if (data) {
+                // Ambil data terbaru (berdasarkan key Firebase yang ter-generate secara kronologis)
+                const keys = Object.keys(data);
+                const latestKey = keys[keys.length - 1];
+                const latestData = data[latestKey];
+
+                badge.innerText = `Shift ${latestData.shift} - ${latestData.tanggal}`;
+                
+                // Hitung progress checklist
+                let taskDone = 0;
+                let totalTask = latestData.checklist.length;
+                let listHtml = '';
+
+                latestData.checklist.forEach(item => {
+                    if(item.status) taskDone++;
+                    listHtml += `<li class="flex items-center"><i class="fa-solid ${item.status ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-red-500'} mr-2"></i> ${item.nama_tugas}</li>`;
+                });
+
+                container.innerHTML = `
+                    <div class="mb-2 p-3 bg-gray-50 rounded border border-gray-200">
+                        <strong class="block text-gray-700 mb-1">Catatan Operan:</strong>
+                        <p class="whitespace-pre-line">${latestData.catatan || '<i>Tidak ada catatan khusus.</i>'}</p>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <strong class="block text-gray-700 mb-1">Status Monitoring:</strong>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${(taskDone/totalTask)*100}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">${taskDone} dari ${totalTask} tugas selesai</p>
+                        <ul class="space-y-1 text-xs text-gray-600 h-32 overflow-y-auto pr-2">
+                            ${listHtml}
+                        </ul>
+                    </div>
+
+                    <div class="mt-4 border-t pt-3 flex justify-between items-end">
+                        <div>
+                            <p class="text-xs text-gray-500">Kepala Shift:</p>
+                            <p class="font-bold text-gray-800">${latestData.kepala_shift}</p>
+                        </div>
+                        ${latestData.ttd_image ? `<img src="${latestData.ttd_image}" class="h-12 border bg-white" alt="TTD">` : '<span class="text-xs text-gray-400 italic">Tanpa TTD</span>'}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '<p class="text-gray-500 italic">Belum ada data operan dinas yang masuk.</p>';
+                badge.innerText = 'Kosong';
+            }
+        });
+
+    </script>
+</body>
+</html>

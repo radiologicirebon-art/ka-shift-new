@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         .tab-content { display: none; }
@@ -88,6 +90,11 @@
                     </div>
                     <div id="previewOperanContent" class="text-sm text-slate-600 space-y-3">
                         <p class="animate-pulse">Mengambil data dari database...</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t flex space-x-2">
+                        <button id="btnCetakPDF" class="flex-1 bg-gray-800 hover:bg-black text-white text-xs font-bold py-2 px-4 rounded transition">
+                            <i class="fa-solid fa-print mr-2"></i> Cetak Operan Terakhir (PDF)
+                        </button>
                     </div>
                 </div>
             </div>
@@ -272,6 +279,8 @@
         const dbPanggilan = ref(db, 'panggilan_darurat');
         const dbJadwal = ref(db, 'jadwal_pasien');
 
+        let latestOperanData = null; // Simpan data operan terakhir untuk cetak
+
         // ================= 1. LOGIC TAB & SIGNATURE =================
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -308,7 +317,7 @@
         }
         document.getElementById('opTanggal').valueAsDate = new Date();
 
-        // ================= 2. ALARM OTOMATIS (10:25, 13:25, 17:00) =================
+        // ================= 2. ALARM OTOMATIS =================
         const audioAlarm = document.getElementById('audioAlarm');
         function checkAutoAlarm() {
             const now = new Date();
@@ -474,6 +483,7 @@
             if(data) {
                 const keys = Object.keys(data);
                 const latest = data[keys[keys.length - 1]];
+                latestOperanData = latest; // Store for PDF
                 badge.innerText = `Shift ${latest.shift} - ${latest.tanggal}`;
                 let done = latest.checklist.filter(c => c.status).length;
                 cont.innerHTML = `
@@ -488,6 +498,67 @@
                 cont.innerHTML = '<p class="text-gray-500 italic">Belum ada data.</p>';
                 badge.innerText = 'Kosong';
             }
+        });
+
+        // ================= 7. CETAK PDF LOGIC =================
+        document.getElementById('btnCetakPDF').addEventListener('click', () => {
+            if (!latestOperanData) {
+                Swal.fire('Gagal', 'Tidak ada data operan untuk dicetak', 'error');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const l = latestOperanData;
+
+            // Header
+            doc.setFontSize(16);
+            doc.text("LAPORAN OPERAN DINAS RADIOLOGI", 105, 20, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text(`Tanggal: ${l.tanggal}`, 14, 30);
+            doc.text(`Shift: ${l.shift}`, 14, 35);
+            doc.text(`Kepala Shift: ${l.kepala_shift}`, 14, 40);
+
+            // Tabel Checklist
+            const tableRows = l.checklist.map((item, index) => [
+                index + 1,
+                item.nama_tugas,
+                item.status ? "[ V ] Selesai" : "[   ] Belum"
+            ]);
+
+            doc.autoTable({
+                startY: 50,
+                head: [['No', 'Item Monitoring', 'Status']],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 58, 138] }
+            });
+
+            // Catatan
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text("Catatan Notulen:", 14, finalY);
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10);
+            const splitCatatan = doc.splitTextToSize(l.catatan || "Tidak ada catatan khusus.", 180);
+            doc.text(splitCatatan, 14, finalY + 7);
+
+            // Tanda Tangan
+            const ttdY = finalY + 40;
+            doc.text("Kepala Shift,", 150, ttdY);
+            
+            if (l.ttd_image) {
+                doc.addImage(l.ttd_image, 'PNG', 145, ttdY + 2, 40, 20);
+            }
+            
+            doc.setFont(undefined, 'bold');
+            doc.text(l.kepala_shift, 150, ttdY + 30);
+
+            // Save PDF
+            doc.save(`Operan_${l.tanggal}_Shift_${l.shift}.pdf`);
+            Swal.fire('Berhasil', 'Dokumen PDF telah dibuat', 'success');
         });
     </script>
 </body>

@@ -110,6 +110,10 @@
                     <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">Input Jadwal Pasien</h2>
                     <div class="space-y-4">
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan</label>
+                            <input type="date" id="jdlTanggal" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pasien</label>
                             <input type="text" id="jdlNama" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
                         </div>
@@ -118,8 +122,10 @@
                             <input type="text" id="jdlPeriksa" placeholder="Contoh: CT Scan Kontras" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jam Rencana</label>
-                            <input type="time" id="jdlJam" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jam Rencana (Blok Otomatis)</label>
+                            <select id="jdlJam" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
+                                <option value="">-- Pilih Tanggal Dulu --</option>
+                            </select>
                         </div>
                         <button id="btnSimpanJadwal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
                             <i class="fa-solid fa-plus mr-2"></i> Tambah Antrean
@@ -127,7 +133,13 @@
                     </div>
                 </div>
                 <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-2">
-                    <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">Daftar Pasien Terjadwal Hari Ini</h2>
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 border-b pb-2 gap-3">
+                        <h2 class="text-xl font-bold text-slate-700">Daftar Pasien Terjadwal</h2>
+                        <div class="flex items-center space-x-2 bg-slate-100 p-2 rounded-lg border">
+                            <label class="text-sm font-semibold text-gray-600"><i class="fa-solid fa-filter"></i> Filter:</label>
+                            <input type="date" id="filterTglTabel" class="px-3 py-1 border rounded text-sm border-gray-300 focus:ring-blue-500">
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
@@ -139,7 +151,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tableJadwalBody">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -302,7 +314,6 @@
     <audio id="audioEmergency" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" preload="auto"></audio>
 
     <script type="module">
-        // IMPORT FIREBASE (Ditambahkan fungsi 'get')
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -313,13 +324,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Referensi Database
         const dbSuhu = ref(db, 'suhu_ruang');
         const dbOperan = ref(db, 'operan_dinas');
         const dbPanggilan = ref(db, 'panggilan_darurat');
         const dbJadwal = ref(db, 'jadwal_pasien');
 
-        let latestOperanData = null; // Simpan data operan terakhir untuk cetak
+        let latestOperanData = null;
 
         // ================= 1. LOGIC TAB & SIGNATURE =================
         window.switchTab = function(tabId) {
@@ -404,43 +414,93 @@
             isFirstLoadPanggilan = false;
         });
 
-        // ================= 4. PENJADWALAN LOGIC =================
+        // ================= 4. PENJADWALAN LOGIC (DENGAN FILTER TANGGAL & BLOK JAM) =================
+        let semuaDataJadwal = {}; 
+        
+        // Default Tanggal Hari Ini
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('jdlTanggal').value = todayStr;
+        document.getElementById('filterTglTabel').value = todayStr;
+
+        // Fungsi Generate Dropdown Jam & Blok Jam
+        function generateTimeSlots(tanggalDipilih) {
+            const selectJam = document.getElementById('jdlJam');
+            selectJam.innerHTML = '<option value="">-- Pilih Jam --</option>';
+            
+            const bookedTimes = [];
+            if(semuaDataJadwal) {
+                Object.values(semuaDataJadwal).forEach(item => {
+                    if(item.tanggal === tanggalDipilih) bookedTimes.push(item.jam);
+                });
+            }
+
+            for(let h=7; h<=21; h++) {
+                for(let m=0; m<60; m+=15) {
+                    const timeString = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                    const isBooked = bookedTimes.includes(timeString);
+                    const optionHtml = isBooked 
+                        ? `<option value="${timeString}" disabled class="bg-red-100 text-red-500 font-bold italic">❌ ${timeString} (Sudah Terisi)</option>`
+                        : `<option value="${timeString}">${timeString}</option>`;
+                    selectJam.innerHTML += optionHtml;
+                }
+            }
+        }
+
+        document.getElementById('jdlTanggal').addEventListener('change', (e) => generateTimeSlots(e.target.value));
+
         document.getElementById('btnSimpanJadwal').addEventListener('click', () => {
+            const tanggal = document.getElementById('jdlTanggal').value;
             const nama = document.getElementById('jdlNama').value;
             const periksa = document.getElementById('jdlPeriksa').value;
             const jam = document.getElementById('jdlJam').value;
-            if(nama && periksa && jam) {
-                push(dbJadwal, { nama, periksa, jam, timestamp: serverTimestamp() });
+            
+            if(tanggal && nama && periksa && jam) {
+                push(dbJadwal, { tanggal, nama, periksa, jam, timestamp: serverTimestamp() });
                 document.getElementById('jdlNama').value = '';
                 document.getElementById('jdlPeriksa').value = '';
+                document.getElementById('jdlJam').value = '';
                 Swal.fire('Berhasil', 'Jadwal ditambahkan', 'success');
             } else {
-                Swal.fire('Error', 'Lengkapi data jadwal', 'error');
+                Swal.fire('Error', 'Lengkapi semua data jadwal!', 'error');
             }
         });
 
-        onValue(dbJadwal, (snap) => {
+        function renderTabelJadwal() {
             const tbody = document.getElementById('tableJadwalBody');
+            const filterTgl = document.getElementById('filterTglTabel').value;
             tbody.innerHTML = '';
-            const data = snap.val();
-            if(data) {
-                Object.keys(data).forEach(key => {
-                    const item = data[key];
-                    tbody.innerHTML += `
-                        <tr class="border-b hover:bg-slate-50 transition">
-                            <td class="px-4 py-3 font-bold text-blue-700">${item.jam}</td>
-                            <td class="px-4 py-3">${item.nama}</td>
-                            <td class="px-4 py-3">${item.periksa}</td>
-                            <td class="px-4 py-3 text-center">
-                                <button onclick="hapusJadwal('${key}')" class="text-red-500 hover:text-red-700 transition">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>`;
+            let adaData = false;
+
+            if(semuaDataJadwal) {
+                const arrJadwal = Object.keys(semuaDataJadwal).map(key => ({ id: key, ...semuaDataJadwal[key] }))
+                                 .sort((a, b) => a.jam.localeCompare(b.jam));
+
+                arrJadwal.forEach(item => {
+                    if(item.tanggal === filterTgl) {
+                        adaData = true;
+                        tbody.innerHTML += `
+                            <tr class="border-b hover:bg-slate-50 transition">
+                                <td class="px-4 py-3 font-bold text-blue-700">${item.jam}</td>
+                                <td class="px-4 py-3">${item.nama}</td>
+                                <td class="px-4 py-3">${item.periksa}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <button onclick="hapusJadwal('${item.id}')" class="text-red-500 hover:text-red-700 transition">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                    }
                 });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">Belum ada antrean jadwal hari ini.</td></tr>';
             }
+            if(!adaData) tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">Tidak ada jadwal untuk tanggal ini.</td></tr>`;
+        }
+
+        document.getElementById('filterTglTabel').addEventListener('change', renderTabelJadwal);
+
+        onValue(dbJadwal, (snap) => {
+            semuaDataJadwal = snap.val() || {};
+            renderTabelJadwal();
+            generateTimeSlots(document.getElementById('jdlTanggal').value);
         });
 
         window.hapusJadwal = (key) => {
@@ -456,7 +516,7 @@
             });
         };
 
-        // ================= 5. SUHU & CHART =================
+        // ================= 5. SUHU & CHART (ORIGINAL) =================
         const masterRuangan = ['USG', 'ADM RADIOLOGI', 'PANORAMIC', 'MRI', 'RONTGEN 1', 'RONTGEN 2', 'CT SCAN', 'RUANG RONTGEN MCU'];
         const ctx = document.getElementById('suhuChart').getContext('2d');
         const suhuChart = new Chart(ctx, {
@@ -492,7 +552,7 @@
             suhuChart.update();
         });
 
-        // ================= 6. OPERAN DINAS =================
+        // ================= 6. OPERAN DINAS (ORIGINAL) =================
         document.getElementById('btnSimpanOperan').addEventListener('click', () => {
             const checklist = [];
             document.querySelectorAll('#checklistContainer input').forEach(cb => checklist.push({nama_tugas: cb.value, status: cb.checked}));
@@ -523,7 +583,7 @@
             if(data) {
                 const keys = Object.keys(data);
                 const latest = data[keys[keys.length - 1]];
-                latestOperanData = latest; // Store for PDF
+                latestOperanData = latest; 
                 badge.innerText = `Shift ${latest.shift} - ${latest.tanggal}`;
                 let done = latest.checklist.filter(c => c.status).length;
                 cont.innerHTML = `
@@ -540,42 +600,23 @@
             }
         });
 
-        // ================= 7. CETAK PDF LOGIC =================
+        // ================= 7. CETAK PDF (ORIGINAL) =================
         document.getElementById('btnCetakPDF').addEventListener('click', () => {
             if (!latestOperanData) {
                 Swal.fire('Gagal', 'Tidak ada data operan untuk dicetak', 'error');
                 return;
             }
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const l = latestOperanData;
-
-            // Header
             doc.setFontSize(16);
             doc.text("LAPORAN OPERAN DINAS RADIOLOGI", 105, 20, { align: 'center' });
-            
             doc.setFontSize(10);
             doc.text(`Tanggal: ${l.tanggal}`, 14, 30);
             doc.text(`Shift: ${l.shift}`, 14, 35);
             doc.text(`Kepala Shift: ${l.kepala_shift}`, 14, 40);
-
-            // Tabel Checklist
-            const tableRows = l.checklist.map((item, index) => [
-                index + 1,
-                item.nama_tugas,
-                item.status ? "[ V ] Selesai" : "[   ] Belum"
-            ]);
-
-            doc.autoTable({
-                startY: 50,
-                head: [['No', 'Item Monitoring', 'Status']],
-                body: tableRows,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
-            });
-
-            // Catatan
+            const tableRows = l.checklist.map((item, index) => [index + 1, item.nama_tugas, item.status ? "[ V ] Selesai" : "[   ] Belum"]);
+            doc.autoTable({ startY: 50, head: [['No', 'Item Monitoring', 'Status']], body: tableRows, theme: 'grid', headStyles: { fillColor: [30, 58, 138] } });
             const finalY = doc.lastAutoTable.finalY + 10;
             doc.setFontSize(11);
             doc.setFont(undefined, 'bold');
@@ -584,93 +625,56 @@
             doc.setFontSize(10);
             const splitCatatan = doc.splitTextToSize(l.catatan || "Tidak ada catatan khusus.", 180);
             doc.text(splitCatatan, 14, finalY + 7);
-
-            // Tanda Tangan
             const ttdY = finalY + 40;
             doc.text("Kepala Shift,", 150, ttdY);
-            
-            if (l.ttd_image) {
-                doc.addImage(l.ttd_image, 'PNG', 145, ttdY + 2, 40, 20);
-            }
-            
+            if (l.ttd_image) doc.addImage(l.ttd_image, 'PNG', 145, ttdY + 2, 40, 20);
             doc.setFont(undefined, 'bold');
             doc.text(l.kepala_shift, 150, ttdY + 30);
-
-            // Save PDF
             doc.save(`Operan_${l.tanggal}_Shift_${l.shift}.pdf`);
             Swal.fire('Berhasil', 'Dokumen PDF telah dibuat', 'success');
         });
 
-        // ================= 8. LOGIC REKAP LAPORAN =================
-        document.getElementById('filterBulan').valueAsDate = new Date(); // Set default bulan ini
-
+        // ================= 8. LOGIC REKAP LAPORAN (ORIGINAL) =================
+        document.getElementById('filterBulan').valueAsDate = new Date();
         document.getElementById('btnTampilkanRekap').addEventListener('click', async () => {
             const jenis = document.getElementById('filterJenis').value;
-            const bulan = document.getElementById('filterBulan').value; // Format: YYYY-MM
+            const bulan = document.getElementById('filterBulan').value;
             const tBody = document.getElementById('rekapBody');
             const tHead = document.getElementById('rekapHeader');
-            
             tBody.innerHTML = '<tr><td colspan="5" class="text-center py-8">Mengambil data...</td></tr>';
             
             try {
                 if (jenis === 'operan') {
                     tHead.innerHTML = `<tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Shift</th><th class="px-4 py-3">Kepala Shift</th><th class="px-4 py-3">Catatan</th><th class="px-4 py-3">Status Checklist</th></tr>`;
-                    
                     const snapshot = await get(ref(db, 'operan_dinas'));
                     if (snapshot.exists()) {
                         const data = snapshot.val();
                         let html = '';
                         Object.values(data).forEach(item => {
-                            // Filter berdasarkan bulan (YYYY-MM)
                             if (item.tanggal && item.tanggal.startsWith(bulan)) {
                                 let doneCheck = item.checklist ? item.checklist.filter(c => c.status).length : 0;
                                 let totalCheck = item.checklist ? item.checklist.length : 0;
                                 let colorClass = doneCheck === totalCheck ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100';
-                                
-                                html += `
-                                <tr class="hover:bg-slate-50 border-b">
-                                    <td class="px-4 py-3 font-semibold">${item.tanggal}</td>
-                                    <td class="px-4 py-3">${item.shift}</td>
-                                    <td class="px-4 py-3">${item.kepala_shift}</td>
-                                    <td class="px-4 py-3 max-w-xs truncate" title="${item.catatan}">${item.catatan || '-'}</td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-xs font-medium px-2.5 py-0.5 rounded ${colorClass}">
-                                            ${doneCheck}/${totalCheck} Selesai
-                                        </span>
-                                    </td>
-                                </tr>`;
+                                html += `<tr class="hover:bg-slate-50 border-b"><td class="px-4 py-3 font-semibold">${item.tanggal}</td><td class="px-4 py-3">${item.shift}</td><td class="px-4 py-3">${item.kepala_shift}</td><td class="px-4 py-3 max-w-xs truncate" title="${item.catatan}">${item.catatan || '-'}</td><td class="px-4 py-3"><span class="text-xs font-medium px-2.5 py-0.5 rounded ${colorClass}">${doneCheck}/${totalCheck} Selesai</span></td></tr>`;
                             }
                         });
                         tBody.innerHTML = html || '<tr><td colspan="5" class="text-center py-8 text-gray-500">Tidak ada data di bulan ini.</td></tr>';
-                    } else {
-                        tBody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Belum ada data operan di database.</td></tr>';
                     }
-                    
                 } else if (jenis === 'jadwal') {
-                    tHead.innerHTML = `<tr><th class="px-4 py-3">Tanggal Input</th><th class="px-4 py-3">Jam Rencana</th><th class="px-4 py-3">Nama Pasien</th><th class="px-4 py-3">Pemeriksaan</th></tr>`;
-                    
+                    tHead.innerHTML = `<tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Jam Rencana</th><th class="px-4 py-3">Nama Pasien</th><th class="px-4 py-3">Pemeriksaan</th></tr>`;
                     const snapshot = await get(ref(db, 'jadwal_pasien'));
                     if (snapshot.exists()) {
                         const data = snapshot.val();
                         let html = '';
                         Object.values(data).forEach(item => {
-                            html += `
-                            <tr class="hover:bg-slate-50 border-b">
-                                <td class="px-4 py-3 text-gray-400 italic">Disimpan Realtime</td>
-                                <td class="px-4 py-3 font-bold">${item.jam}</td>
-                                <td class="px-4 py-3">${item.nama}</td>
-                                <td class="px-4 py-3">${item.periksa}</td>
-                            </tr>`;
+                            if (item.tanggal && item.tanggal.startsWith(bulan)) {
+                                html += `<tr class="hover:bg-slate-50 border-b"><td class="px-4 py-3 font-semibold">${item.tanggal}</td><td class="px-4 py-3 font-bold">${item.jam}</td><td class="px-4 py-3">${item.nama}</td><td class="px-4 py-3">${item.periksa}</td></tr>`;
+                            }
                         });
-                        tBody.innerHTML = html;
-                    } else {
-                        tBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Belum ada history jadwal pasien.</td></tr>';
+                        tBody.innerHTML = html || '<tr><td colspan="4" class="text-center py-8 text-gray-500">Tidak ada data jadwal di bulan ini.</td></tr>';
                     }
                 }
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Error', 'Gagal mengambil data dari server.', 'error');
-            }
+            } catch (error) { console.error(error); Swal.fire('Error', 'Gagal mengambil data.', 'error'); }
         });
     </script>
 </body>

@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kepala Shift Instalasi Radiologi</title>
+    <title>Pro-Radiology | Dashboard Kepala Shift</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
@@ -14,301 +16,311 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        canvas#signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.5rem; width: 100%; height: 200px; touch-action: none; background-color: #f8fafc; }
+        .tab-content.active { display: block; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .sidebar-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        
+        canvas#signature-pad { border: 2px dashed #e2e8f0; border-radius: 12px; width: 100%; height: 200px; background-color: #ffffff; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .btn-gradient { background: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%); transition: all 0.3s ease; }
+        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4); }
+        
         .bell-shake { animation: shake 0.5s infinite; }
         @keyframes shake {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(10deg); }
-            50% { transform: rotate(0deg); }
-            75% { transform: rotate(-10deg); }
-            100% { transform: rotate(0deg); }
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(8deg); }
+            75% { transform: rotate(-8deg); }
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased">
+<body class="text-slate-900">
 
-    <nav class="bg-blue-800 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-3">
-                    <i class="fa-solid fa-x-ray text-2xl"></i>
-                    <span class="font-bold text-xl tracking-wider">RADIOLOGI SHIFT DASHBOARD</span>
-                </div>
-                <div class="hidden md:flex space-x-1">
-                    <button onclick="switchTab('dashboard')" class="tab-btn px-4 py-2 rounded bg-blue-700 hover:bg-blue-600 font-medium transition" data-target="dashboard">
-                        <i class="fa-solid fa-house mr-2"></i> Dashboard
-                    </button>
-                    <button onclick="switchTab('jadwal')" class="tab-btn px-4 py-2 rounded hover:bg-blue-600 font-medium transition" data-target="jadwal">
-                        <i class="fa-solid fa-calendar-days mr-2"></i> Penjadwalan
-                    </button>
-                    <button onclick="switchTab('operan')" class="tab-btn px-4 py-2 rounded hover:bg-blue-600 font-medium transition" data-target="operan">
-                        <i class="fa-solid fa-clipboard-list mr-2"></i> Operan Dinas
-                    </button>
-                    <button onclick="switchTab('suhu')" class="tab-btn px-4 py-2 rounded hover:bg-blue-600 font-medium transition" data-target="suhu">
-                        <i class="fa-solid fa-temperature-half mr-2"></i> Suhu Ruang
-                    </button>
-                    <button onclick="switchTab('rekap')" class="tab-btn px-4 py-2 rounded hover:bg-blue-600 font-medium transition" data-target="rekap">
-                        <i class="fa-solid fa-file-lines mr-2"></i> Rekap Laporan
-                    </button>
-                </div>
+    <nav class="glass sticky top-0 z-50 px-6 py-3 flex justify-between items-center shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-2 rounded-lg">
+                <i class="fa-solid fa-microscope text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight tracking-tight">RAD-SMART <span class="text-blue-600 text-xs font-medium block">HOSPITAL DASHBOARD</span></h1>
             </div>
         </div>
-        <div class="md:hidden flex justify-around bg-blue-900 text-sm py-2">
-            <button onclick="switchTab('dashboard')" class="tab-btn p-2 text-white" data-target="dashboard"><i class="fa-solid fa-house"></i> Dash</button>
-            <button onclick="switchTab('jadwal')" class="tab-btn p-2 text-white opacity-70" data-target="jadwal"><i class="fa-solid fa-calendar-days"></i> Jadwal</button>
-            <button onclick="switchTab('operan')" class="tab-btn p-2 text-white opacity-70" data-target="operan"><i class="fa-solid fa-clipboard-list"></i> Operan</button>
-            <button onclick="switchTab('suhu')" class="tab-btn p-2 text-white opacity-70" data-target="suhu"><i class="fa-solid fa-temperature-half"></i> Suhu</button>
-            <button onclick="switchTab('rekap')" class="tab-btn p-2 text-white opacity-70" data-target="rekap"><i class="fa-solid fa-file-lines"></i> Rekap</button>
+        <div class="flex items-center space-x-4">
+            <div id="realtimeClock" class="hidden md:block text-right">
+                <p class="text-sm font-bold" id="txtJam">00:00:00</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest" id="txtTgl">-- --- ----</p>
+            </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-6">
-
-        <section id="dashboard" class="tab-content active">
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8 text-center border-t-4 border-red-600">
-                <h2 class="text-2xl font-bold mb-4 text-slate-700">Notifikasi Pasien Baru</h2>
-                <button id="btnPanggilan" class="bg-gradient-to-r from-red-600 to-yellow-500 hover:from-red-700 hover:to-yellow-600 text-white font-bold py-6 px-10 rounded-full shadow-xl transform transition hover:scale-105 active:scale-95 flex flex-col items-center justify-center mx-auto w-full md:w-1/2">
-                    <i class="fa-solid fa-bell text-5xl mb-2"></i>
-                    <span class="text-2xl">PENCET JIKA ADA PASIEN BARU</span>
+    <div class="flex min-h-screen">
+        <aside class="w-64 bg-white border-r hidden lg:block p-6 space-y-2 sticky top-16 h-[calc(100vh-64px)]">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Main Menu</p>
+            <button onclick="switchTab('dashboard')" class="sidebar-btn active w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition font-medium text-slate-600 hover:bg-slate-50" data-target="dashboard">
+                <i class="fa-solid fa-grid-2 text-lg"></i> <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('jadwal')" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition font-medium text-slate-600 hover:bg-slate-50" data-target="jadwal">
+                <i class="fa-solid fa-calendar-check text-lg"></i> <span>Penjadwalan</span>
+            </button>
+            <button onclick="switchTab('operan')" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition font-medium text-slate-600 hover:bg-slate-50" data-target="operan">
+                <i class="fa-solid fa-notes-medical text-lg"></i> <span>Operan Dinas</span>
+            </button>
+            <button onclick="switchTab('suhu')" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition font-medium text-slate-600 hover:bg-slate-50" data-target="suhu">
+                <i class="fa-solid fa-temperature-three-quarters text-lg"></i> <span>Suhu Ruang</span>
+            </button>
+            <div class="pt-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Reports</p>
+                <button onclick="switchTab('rekap')" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition font-medium text-slate-600 hover:bg-slate-50" data-target="rekap">
+                    <i class="fa-solid fa-chart-pie text-lg"></i> <span>Rekap Laporan</span>
                 </button>
-                <p class="text-sm text-slate-500 mt-3"><i class="fa-solid fa-circle-info"></i> Notifikasi ini akan berbunyi di seluruh perangkat yang membuka dashboard ini.</p>
             </div>
+        </aside>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-slate-700 border-b pb-2 mb-4">
-                        <i class="fa-solid fa-chart-bar text-blue-600 mr-2"></i> Data Real Time Suhu Ruang
-                    </h3>
-                    <canvas id="suhuChart" height="200"></canvas>
-                </div>
+        <main class="flex-1 p-4 md:p-8 pb-24 lg:pb-8">
 
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center border-b pb-2 mb-4">
-                        <h3 class="text-lg font-bold text-slate-700">
-                            <i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Preview Operan Dinas Terakhir
-                        </h3>
-                        <span id="previewShiftBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Memuat...</span>
+            <section id="dashboard" class="tab-content active space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border p-8 flex flex-col items-center justify-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-bell text-9xl"></i></div>
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Panggilan Pasien Baru</h2>
+                        <p class="text-slate-500 mb-8 text-center max-w-sm text-sm">Tekan tombol di bawah untuk memberikan notifikasi suara ke seluruh stasiun kerja radiologi.</p>
+                        <button id="btnPanggilan" class="btn-gradient w-48 h-48 rounded-full flex flex-col items-center justify-center text-white shadow-2xl relative z-10">
+                            <i class="fa-solid fa-bell text-6xl mb-2"></i>
+                            <span class="font-bold tracking-widest text-xs uppercase">PANGGIL</span>
+                        </button>
                     </div>
-                    <div id="previewOperanContent" class="text-sm text-slate-600 space-y-3">
-                        <p class="animate-pulse">Mengambil data dari database...</p>
-                    </div>
-                    <div class="mt-4 pt-4 border-t flex space-x-2">
-                        <button id="btnCetakPDF" class="flex-1 bg-gray-800 hover:bg-black text-white text-xs font-bold py-2 px-4 rounded transition">
-                            <i class="fa-solid fa-print mr-2"></i> Cetak Operan Terakhir (PDF)
+
+                    <div class="bg-white rounded-3xl shadow-sm border p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-800">Operan Terakhir</h3>
+                            <span id="previewShiftBadge" class="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-1 rounded-md">...</span>
+                        </div>
+                        <div id="previewOperanContent" class="space-y-4 mb-6 min-h-[150px]">
+                            </div>
+                        <button id="btnCetakPDF" class="w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl text-xs font-bold transition flex items-center justify-center">
+                            <i class="fa-solid fa-file-pdf mr-2"></i> DOWNLOAD PDF
                         </button>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <section id="jadwal" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-1">
-                    <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">Input Jadwal Pasien</h2>
-                    <div class="space-y-4">
+                <div class="bg-white rounded-3xl shadow-sm border p-6">
+                    <h3 class="font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="w-2 h-6 bg-blue-600 rounded-full mr-3"></span> Monitoring Suhu Real-time
+                    </h3>
+                    <div class="h-[300px]">
+                        <canvas id="suhuChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="jadwal" class="tab-content">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="lg:w-1/3 space-y-6">
+                        <div class="bg-white rounded-3xl shadow-sm border p-6">
+                            <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                                <i class="fa-solid fa-calendar-plus text-blue-600 mr-3"></i> Booking Pasien
+                            </h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tanggal</label>
+                                    <input type="date" id="jdlTanggal" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Nama Pasien</label>
+                                    <input type="text" id="jdlNama" placeholder="Nama Lengkap" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pemeriksaan</label>
+                                    <input type="text" id="jdlPeriksa" placeholder="Contoh: CT Abdomen" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pilih Jam</label>
+                                    <select id="jdlJam" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition">
+                                        <option value="">-- Pilih Tanggal Dulu --</option>
+                                    </select>
+                                </div>
+                                <button id="btnSimpanJadwal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition">
+                                    TAMBAH JADWAL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:w-2/3 bg-white rounded-3xl shadow-sm border overflow-hidden">
+                        <div class="p-6 border-b flex justify-between items-center bg-slate-50/50">
+                            <h2 class="font-bold text-slate-800">Daftar Terjadwal</h2>
+                            <input type="date" id="filterTglTabel" class="text-xs border-0 bg-white shadow-sm rounded-lg px-3 py-2">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase tracking-widest">
+                                    <tr>
+                                        <th class="px-6 py-4">Waktu</th>
+                                        <th class="px-6 py-4">Identitas Pasien</th>
+                                        <th class="px-6 py-4">Tindakan</th>
+                                        <th class="px-6 py-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableJadwalBody" class="divide-y text-sm">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="operan" class="tab-content">
+                <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-sm border p-8">
+                    <div class="mb-8 border-b pb-6">
+                        <h2 class="text-2xl font-bold text-slate-800">Notulen Operan Dinas</h2>
+                        <p class="text-slate-500 text-sm">Lengkapi data monitoring sebelum mengakhiri shift.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan</label>
-                            <input type="date" id="jdlTanggal" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tanggal Dinas</label>
+                            <input type="date" id="opTanggal" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pasien</label>
-                            <input type="text" id="jdlNama" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pemeriksaan</label>
-                            <input type="text" id="jdlPeriksa" placeholder="Contoh: CT Scan Kontras" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jam Rencana (Blok Otomatis)</label>
-                            <select id="jdlJam" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
-                                <option value="">-- Pilih Tanggal Dulu --</option>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Shift</label>
+                            <select id="opShift" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3">
+                                <option value="">Pilih Shift</option>
+                                <option value="Pagi">Pagi (07:30 - 14:00)</option>
+                                <option value="Siang">Siang (14:00 - 21:00)</option>
+                                <option value="Malam">Malam (21:00 - 07:30)</option>
                             </select>
                         </div>
-                        <button id="btnSimpanJadwal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
-                            <i class="fa-solid fa-plus mr-2"></i> Tambah Antrean
+                    </div>
+
+                    <div class="mb-8">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-3 text-blue-600">Checklist Monitoring Kepala Shift</label>
+                        <div id="checklistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-6 rounded-2xl">
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Semua hasil pemeriksaan radiologi telah di cek" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Hasil pemeriksaan dicek</span></label>
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Pasien dengan penjadwalan sudah diinput obat & alkes" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Obat & Alkes Terinput</span></label>
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Perbaikan cepat bila ada kekurangan" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Perbaikan kekurangan</span></label>
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Ruangan sudah rapih dan bersih" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Kebersihan Ruangan</span></label>
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Kontrol mutu radiologi berjalan" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Kontrol Mutu</span></label>
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Pemantauan mutu alat sudah dilakukan" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Mutu Alat</span></label>
+                            <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition cursor-pointer"><input type="checkbox" value="Monitoring hasil radiologi yang belum expertise" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span class="text-sm text-slate-700">Monitoring Expertise</span></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Catatan Operan</label>
+                        <textarea id="opCatatan" rows="4" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500" placeholder="Ketik kejadian penting selama shift..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 items-end">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Nama Jelas</label>
+                                <input type="text" id="ttdNama" oninput="updateAutoGenerate()" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Gelar</label>
+                                <input type="text" id="ttdGelar" oninput="updateAutoGenerate()" placeholder="S.Tr.Rad" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-3">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase">Tanda Tangan</label>
+                                <button type="button" onclick="signaturePad.clear()" class="text-[10px] font-bold text-red-500 uppercase">Hapus</button>
+                            </div>
+                            <canvas id="signature-pad" class="shadow-inner"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div id="ttdAutoText" class="hidden"></div> <button id="btnSimpanOperan" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-5 rounded-2xl shadow-xl transition flex items-center justify-center">
+                        <i class="fa-solid fa-lock mr-3"></i> SIMPAN & KUNCI OPERAN DINAS
+                    </button>
+                </div>
+            </section>
+
+            <section id="suhu" class="tab-content">
+                <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border p-8">
+                    <h2 class="text-xl font-bold text-slate-800 mb-8 border-b pb-4">Update Kondisi Ruangan</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pilih Lokasi Ruangan</label>
+                            <select id="suhuRuangan" class="w-full mt-1 bg-slate-50 border-0 rounded-xl px-4 py-4 text-lg">
+                                <option value="">-- Pilih Ruangan --</option>
+                                <option value="USG">USG</option>
+                                <option value="ADM RADIOLOGI">ADM RADIOLOGI</option>
+                                <option value="PANORAMIC">PANORAMIC</option>
+                                <option value="MRI">MRI</option>
+                                <option value="RONTGEN 1">RONTGEN 1</option>
+                                <option value="RONTGEN 2">RONTGEN 2</option>
+                                <option value="CT SCAN">CT SCAN</option>
+                                <option value="RUANG RONTGEN MCU">RUANG RONTGEN MCU</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-blue-50 p-6 rounded-2xl">
+                                <label class="text-[10px] font-bold text-blue-400 uppercase block mb-2">Suhu (°C)</label>
+                                <input type="number" id="suhuDerajat" step="0.1" class="w-full bg-transparent border-0 text-3xl font-bold text-blue-700 p-0 focus:ring-0" placeholder="0.0">
+                            </div>
+                            <div class="bg-teal-50 p-6 rounded-2xl">
+                                <label class="text-[10px] font-bold text-teal-400 uppercase block mb-2">Kelembaban (%)</label>
+                                <input type="number" id="suhuLembab" class="w-full bg-transparent border-0 text-3xl font-bold text-teal-700 p-0 focus:ring-0" placeholder="0">
+                            </div>
+                        </div>
+                        <button id="btnSimpanSuhu" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-5 rounded-2xl shadow-lg transition">
+                            KIRIM UPDATE KE DASHBOARD
                         </button>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-2">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 border-b pb-2 gap-3">
-                        <h2 class="text-xl font-bold text-slate-700">Daftar Pasien Terjadwal</h2>
-                        <div class="flex items-center space-x-2 bg-slate-100 p-2 rounded-lg border">
-                            <label class="text-sm font-semibold text-gray-600"><i class="fa-solid fa-filter"></i> Filter:</label>
-                            <input type="date" id="filterTglTabel" class="px-3 py-1 border rounded text-sm border-gray-300 focus:ring-blue-500">
+            </section>
+
+            <section id="rekap" class="tab-content">
+                <div class="bg-white rounded-3xl shadow-sm border p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+                        <h2 class="text-xl font-bold text-slate-800">Arsip Laporan Digital</h2>
+                        <div class="flex flex-wrap gap-2">
+                            <select id="filterJenis" class="bg-slate-50 border-0 rounded-xl px-4 py-2 text-xs font-medium">
+                                <option value="operan">Operan Dinas</option>
+                                <option value="jadwal">Jadwal Pasien</option>
+                            </select>
+                            <input type="month" id="filterBulan" class="bg-slate-50 border-0 rounded-xl px-4 py-2 text-xs font-medium">
+                            <button id="btnTampilkanRekap" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition">LIHAT</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-600 uppercase text-xs">
-                                <tr>
-                                    <th class="px-4 py-3">Jam</th>
-                                    <th class="px-4 py-3">Nama Pasien</th>
-                                    <th class="px-4 py-3">Pemeriksaan</th>
-                                    <th class="px-4 py-3 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableJadwalBody">
+                        <table class="w-full text-left">
+                            <thead id="rekapHeader" class="bg-slate-50 text-slate-400 text-[10px] uppercase tracking-widest">
+                                </thead>
+                            <tbody id="rekapBody" class="divide-y text-sm">
+                                <tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Pilih filter untuk memuat data arsip.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="operan" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-2xl font-bold text-slate-700 mb-6 border-b pb-3">Form Input Notulen Operan Dinas</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                        <input type="date" id="opTanggal" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Shift</label>
-                        <select id="opShift" class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500">
-                            <option value="">Pilih Shift</option>
-                            <option value="Pagi">Pagi</option>
-                            <option value="Siang">Siang</option>
-                            <option value="Malam">Malam</option>
-                        </select>
-                    </div>
-                </div>
+        </main>
+    </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Notulen Operan Dinas</label>
-                    <textarea id="opCatatan" rows="4" placeholder="Contoh: Kendala alat, Jumlah pasien, Kasus khusus..." class="w-full px-4 py-2 border rounded-lg border-gray-300 focus:ring-blue-500"></textarea>
-                </div>
-
-                <div class="mb-8">
-                    <h3 class="text-md font-bold text-slate-700 mb-3 bg-slate-100 p-2 rounded">Checklist Monitoring Kepala Shift</h3>
-                    <div class="space-y-2" id="checklistContainer">
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Semua hasil pemeriksaan radiologi telah di cek" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Semua hasil pemeriksaan radiologi telah di cek</span></label>
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Pasien dengan penjadwalan sudah diinput obat & alkes" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Pasien dengan penjadwalan sudah diinput obat & alkes</span></label>
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Perbaikan cepat bila ada kekurangan" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Perbaikan cepat bila ada kekurangan</span></label>
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Ruangan sudah rapih dan bersih" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Ruangan sudah rapih dan bersih</span></label>
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Kontrol mutu radiologi berjalan" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Kontrol mutu radiologi berjalan</span></label>
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Pemantauan mutu alat sudah dilakukan" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Pemantauan mutu alat sudah dilakukan</span></label>
-                        <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" value="Monitoring hasil radiologi yang belum expertise" class="form-checkbox h-5 w-5 text-blue-600 rounded"><span class="text-slate-700">Monitoring hasil radiologi yang belum expertise</span></label>
-                    </div>
-                </div>
-
-                <div class="border-t pt-6 mb-6">
-                    <h3 class="text-md font-bold text-slate-700 mb-4">Tanda Tangan Digital Kepala Shift</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Jelas</label>
-                            <input type="text" id="ttdNama" placeholder="Masukkan Nama" oninput="updateAutoGenerate()" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Gelar</label>
-                            <input type="text" id="ttdGelar" placeholder="Contoh: S.Tr.Rad" oninput="updateAutoGenerate()" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Auto Generate TTD Text:</label>
-                        <div class="p-3 bg-gray-100 border rounded font-semibold text-gray-800" id="ttdAutoText">-</div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between">
-                            <span>Gambar Tanda Tangan (Opsional)</span>
-                            <button type="button" onclick="signaturePad.clear()" class="text-red-500 hover:text-red-700 text-xs font-bold">Bersihkan Canvas</button>
-                        </label>
-                        <canvas id="signature-pad"></canvas>
-                    </div>
-                </div>
-
-                <button id="btnSimpanOperan" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition">
-                    <i class="fa-solid fa-lock mr-2"></i> Simpan & Kunci Data
-                </button>
-            </div>
-        </section>
-
-        <section id="suhu" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto">
-                <h2 class="text-2xl font-bold text-slate-700 mb-6 border-b pb-3">Input Monitoring Suhu & Kelembaban Ruang</h2>
-                
-                <div class="space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Ruangan</label>
-                        <select id="suhuRuangan" class="w-full px-4 py-3 border rounded-lg bg-gray-50 border-gray-300">
-                            <option value="">-- Pilih Ruangan --</option>
-                            <option value="USG">USG</option>
-                            <option value="ADM RADIOLOGI">ADM RADIOLOGI</option>
-                            <option value="PANORAMIC">PANORAMIC</option>
-                            <option value="MRI">MRI</option>
-                            <option value="RONTGEN 1">RONTGEN 1</option>
-                            <option value="RONTGEN 2">RONTGEN 2</option>
-                            <option value="CT SCAN">CT SCAN</option>
-                            <option value="RUANG RONTGEN MCU">RUANG RONTGEN MCU</option>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Suhu Ruangan (°C)</label>
-                            <div class="relative">
-                                <input type="number" id="suhuDerajat" step="0.1" class="w-full px-4 py-3 border border-gray-300 rounded-lg pr-10">
-                                <span class="absolute right-3 top-3 text-gray-500 font-bold">°C</span>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Kelembaban (%)</label>
-                            <div class="relative">
-                                <input type="number" id="suhuLembab" class="w-full px-4 py-3 border border-gray-300 rounded-lg pr-10">
-                                <span class="absolute right-3 top-3 text-gray-500 font-bold">%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button id="btnSimpanSuhu" class="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition">
-                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Update Suhu ke Dashboard
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <section id="rekap" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-2xl font-bold text-slate-700 mb-6 border-b pb-3">Rekapitulasi Laporan Radiologi</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Laporan</label>
-                        <select id="filterJenis" class="w-full px-3 py-2 border rounded border-gray-300">
-                            <option value="operan">Operan Dinas</option>
-                            <option value="jadwal">Jadwal Pasien</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Bulan</label>
-                        <input type="month" id="filterBulan" class="w-full px-3 py-2 border rounded border-gray-300">
-                    </div>
-                    <div class="flex items-end">
-                        <button id="btnTampilkanRekap" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded shadow transition">
-                            <i class="fa-solid fa-magnifying-glass mr-2"></i> Tampilkan
-                        </button>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto border rounded-lg">
-                    <table class="w-full text-left text-sm">
-                        <thead id="rekapHeader" class="bg-blue-100 text-slate-700 uppercase text-xs">
-                            </thead>
-                        <tbody id="rekapBody" class="divide-y divide-gray-200">
-                            <tr><td colspan="5" class="text-center py-8 text-gray-500 italic">Silakan pilih filter dan klik Tampilkan.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-    </main>
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 glass border-t flex justify-around p-3 z-50">
+        <button onclick="switchTab('dashboard')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-blue-600">
+            <i class="fa-solid fa-house text-lg"></i><span class="text-[9px] font-bold">Home</span>
+        </button>
+        <button onclick="switchTab('jadwal')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-blue-600">
+            <i class="fa-solid fa-calendar text-lg"></i><span class="text-[9px] font-bold">Jadwal</span>
+        </button>
+        <button onclick="switchTab('operan')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-blue-600">
+            <i class="fa-solid fa-clipboard text-lg"></i><span class="text-[9px] font-bold">Operan</span>
+        </button>
+        <button onclick="switchTab('suhu')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-blue-600">
+            <i class="fa-solid fa-temperature-empty text-lg"></i><span class="text-[9px] font-bold">Suhu</span>
+        </button>
+    </div>
 
     <audio id="audioAlarm" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
     <audio id="audioEmergency" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" preload="auto"></audio>
@@ -317,10 +329,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        const firebaseConfig = {
-            databaseURL: "https://ka-shift-new-default-rtdb.asia-southeast1.firebasedatabase.app/"
-        };
-
+        const firebaseConfig = { databaseURL: "https://ka-shift-new-default-rtdb.asia-southeast1.firebasedatabase.app/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -331,24 +340,30 @@
 
         let latestOperanData = null;
 
-        // ================= 1. LOGIC TAB & SIGNATURE =================
+        // 1. CLOCK LOGIC
+        function updateClock() {
+            const now = new Date();
+            const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            document.getElementById('txtJam').innerText = now.toLocaleTimeString('id-ID');
+            document.getElementById('txtTgl').innerText = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+        }
+        setInterval(updateClock, 1000);
+
+        // 2. TAB LOGIC
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                if(btn.dataset.target === tabId) {
-                    btn.classList.add('bg-blue-700');
-                    btn.classList.remove('opacity-70');
-                } else {
-                    btn.classList.remove('bg-blue-700');
-                    btn.classList.add('opacity-70');
-                }
+            // Sidebar desktop buttons
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                if(btn.dataset.target === tabId) { btn.classList.add('active'); } else { btn.classList.remove('active'); }
             });
 
-            if(tabId === 'operan') { resizeCanvas(); }
+            if(tabId === 'operan') { setTimeout(resizeCanvas, 100); }
         }
 
+        // 3. SIGNATURE PAD
         const canvas = document.getElementById('signature-pad');
         window.signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgba(255, 255, 255, 0)' });
         function resizeCanvas() {
@@ -367,81 +382,55 @@
         }
         document.getElementById('opTanggal').valueAsDate = new Date();
 
-        // ================= 2. ALARM OTOMATIS =================
+        // 4. ALARM & CALL LOGIC
         const audioAlarm = document.getElementById('audioAlarm');
-        function checkAutoAlarm() {
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const targetTimes = ['10:25', '13:25', '17:00'];
-            if (targetTimes.includes(timeStr)) {
-                const alarmKey = `alarm_${timeStr}_${now.toDateString()}`;
-                if (!localStorage.getItem(alarmKey)) {
-                    audioAlarm.play().catch(e => console.log(e));
-                    Swal.fire({
-                        title: '⏰ Waktunya Lapor!',
-                        text: '📢 "Jangan Lupa WA Dokter Spesialis"',
-                        icon: 'warning',
-                        confirmButtonText: 'Sudah Dilakukan',
-                        confirmButtonColor: '#2563eb',
-                        allowOutsideClick: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            localStorage.setItem(alarmKey, 'true');
-                            audioAlarm.pause();
-                        }
-                    });
+        setInterval(() => {
+            const timeStr = new Date().getHours().toString().padStart(2, '0') + ":" + new Date().getMinutes().toString().padStart(2, '0');
+            if (['10:25', '13:25', '17:00'].includes(timeStr)) {
+                const key = `alarm_${timeStr}_${new Date().toDateString()}`;
+                if (!localStorage.getItem(key)) {
+                    audioAlarm.play();
+                    Swal.fire({ title: '⏰ Waktunya Lapor!', text: '📢 "Jangan Lupa WA Dokter Spesialis"', icon: 'warning', confirmButtonText: 'Sudah Dilakukan' })
+                    .then(() => { localStorage.setItem(key, 'true'); audioAlarm.pause(); });
                 }
             }
-        }
-        setInterval(checkAutoAlarm, 30000);
+        }, 30000);
 
-        // ================= 3. BEL PANGGILAN =================
         document.getElementById('btnPanggilan').addEventListener('click', () => {
-            set(dbPanggilan, { waktu: serverTimestamp(), trigger_id: Math.random().toString(36).substring(7) });
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Bel Dikirim!', showConfirmButton: false, timer: 1500 });
+            set(dbPanggilan, { waktu: serverTimestamp(), trigger_id: Math.random() });
         });
 
-        let isFirstLoadPanggilan = true;
+        let isFirstLoad = true;
         onValue(dbPanggilan, (snap) => {
-            if (!isFirstLoadPanggilan && snap.val()) {
-                document.getElementById('audioEmergency').play().catch(e=>console.log(e));
-                const btnBell = document.getElementById('btnPanggilan');
-                btnBell.classList.add('bell-shake', 'ring-8', 'ring-red-400');
-                Swal.fire({ title: '🚨 PASIEN BARU!', text: 'Ada Pasien di Radiologi!', icon: 'info', confirmButtonText: 'Tutup Notifikasi', confirmButtonColor: '#dc2626' }).then(() => {
-                    btnBell.classList.remove('bell-shake', 'ring-8', 'ring-red-400');
-                });
+            if (!isFirstLoad && snap.val()) {
+                document.getElementById('audioEmergency').play();
+                document.getElementById('btnPanggilan').classList.add('bell-shake');
+                Swal.fire({ title: '🚨 PASIEN BARU!', text: 'Ada Pasien di Radiologi!', icon: 'info' })
+                .then(() => document.getElementById('btnPanggilan').classList.remove('bell-shake'));
             }
-            isFirstLoadPanggilan = false;
+            isFirstLoad = false;
         });
 
-        // ================= 4. PENJADWALAN LOGIC (DENGAN FILTER TANGGAL & BLOK JAM) =================
+        // 5. PENJADWALAN LOGIC (BLOCKING & FILTER)
         let semuaDataJadwal = {}; 
-        
-        // Default Tanggal Hari Ini
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('jdlTanggal').value = todayStr;
         document.getElementById('filterTglTabel').value = todayStr;
 
-        // Fungsi Generate Dropdown Jam & Blok Jam
         function generateTimeSlots(tanggalDipilih) {
             const selectJam = document.getElementById('jdlJam');
             selectJam.innerHTML = '<option value="">-- Pilih Jam --</option>';
-            
             const bookedTimes = [];
             if(semuaDataJadwal) {
-                Object.values(semuaDataJadwal).forEach(item => {
-                    if(item.tanggal === tanggalDipilih) bookedTimes.push(item.jam);
-                });
+                Object.values(semuaDataJadwal).forEach(item => { if(item.tanggal === tanggalDipilih) bookedTimes.push(item.jam); });
             }
-
             for(let h=7; h<=21; h++) {
                 for(let m=0; m<60; m+=15) {
-                    const timeString = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-                    const isBooked = bookedTimes.includes(timeString);
-                    const optionHtml = isBooked 
-                        ? `<option value="${timeString}" disabled class="bg-red-100 text-red-500 font-bold italic">❌ ${timeString} (Sudah Terisi)</option>`
-                        : `<option value="${timeString}">${timeString}</option>`;
-                    selectJam.innerHTML += optionHtml;
+                    const t = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                    const isBooked = bookedTimes.includes(t);
+                    selectJam.innerHTML += isBooked 
+                        ? `<option disabled class="text-red-300 italic">❌ ${t} (Terisi)</option>`
+                        : `<option value="${t}">${t}</option>`;
                 }
             }
         }
@@ -449,53 +438,42 @@
         document.getElementById('jdlTanggal').addEventListener('change', (e) => generateTimeSlots(e.target.value));
 
         document.getElementById('btnSimpanJadwal').addEventListener('click', () => {
-            const tanggal = document.getElementById('jdlTanggal').value;
-            const nama = document.getElementById('jdlNama').value;
-            const periksa = document.getElementById('jdlPeriksa').value;
-            const jam = document.getElementById('jdlJam').value;
-            
-            if(tanggal && nama && periksa && jam) {
-                push(dbJadwal, { tanggal, nama, periksa, jam, timestamp: serverTimestamp() });
+            const data = {
+                tanggal: document.getElementById('jdlTanggal').value,
+                nama: document.getElementById('jdlNama').value,
+                periksa: document.getElementById('jdlPeriksa').value,
+                jam: document.getElementById('jdlJam').value,
+                timestamp: serverTimestamp()
+            };
+            if(data.tanggal && data.nama && data.periksa && data.jam) {
+                push(dbJadwal, data);
                 document.getElementById('jdlNama').value = '';
                 document.getElementById('jdlPeriksa').value = '';
-                document.getElementById('jdlJam').value = '';
                 Swal.fire('Berhasil', 'Jadwal ditambahkan', 'success');
-            } else {
-                Swal.fire('Error', 'Lengkapi semua data jadwal!', 'error');
             }
         });
 
         function renderTabelJadwal() {
             const tbody = document.getElementById('tableJadwalBody');
-            const filterTgl = document.getElementById('filterTglTabel').value;
+            const filter = document.getElementById('filterTglTabel').value;
             tbody.innerHTML = '';
-            let adaData = false;
-
+            let ada = false;
             if(semuaDataJadwal) {
-                const arrJadwal = Object.keys(semuaDataJadwal).map(key => ({ id: key, ...semuaDataJadwal[key] }))
-                                 .sort((a, b) => a.jam.localeCompare(b.jam));
-
-                arrJadwal.forEach(item => {
-                    if(item.tanggal === filterTgl) {
-                        adaData = true;
-                        tbody.innerHTML += `
-                            <tr class="border-b hover:bg-slate-50 transition">
-                                <td class="px-4 py-3 font-bold text-blue-700">${item.jam}</td>
-                                <td class="px-4 py-3">${item.nama}</td>
-                                <td class="px-4 py-3">${item.periksa}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <button onclick="hapusJadwal('${item.id}')" class="text-red-500 hover:text-red-700 transition">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>`;
+                const arr = Object.keys(semuaDataJadwal).map(k => ({ id: k, ...semuaDataJadwal[k] })).sort((a,b)=>a.jam.localeCompare(b.jam));
+                arr.forEach(i => {
+                    if(i.tanggal === filter) {
+                        ada = true;
+                        tbody.innerHTML += `<tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-blue-600">${i.jam}</td>
+                            <td class="px-6 py-4 font-medium">${i.nama}</td>
+                            <td class="px-6 py-4 text-slate-500">${i.periksa}</td>
+                            <td class="px-6 py-4 text-center"><button onclick="hapusJadwal('${i.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button></td>
+                        </tr>`;
                     }
                 });
             }
-            if(!adaData) tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">Tidak ada jadwal untuk tanggal ini.</td></tr>`;
+            if(!ada) tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">Tidak ada jadwal hari ini.</td></tr>`;
         }
-
-        document.getElementById('filterTglTabel').addEventListener('change', renderTabelJadwal);
 
         onValue(dbJadwal, (snap) => {
             semuaDataJadwal = snap.val() || {};
@@ -503,56 +481,45 @@
             generateTimeSlots(document.getElementById('jdlTanggal').value);
         });
 
-        window.hapusJadwal = (key) => {
-            Swal.fire({
-                title: 'Hapus Jadwal?',
-                text: "Data antrean ini akan dihapus permanen.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Ya, Hapus'
-            }).then((res) => {
-                if(res.isConfirmed) remove(ref(db, `jadwal_pasien/${key}`));
-            });
+        window.hapusJadwal = (k) => {
+            Swal.fire({ title: 'Hapus?', text: "Data akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus' })
+            .then((res) => { if(res.isConfirmed) remove(ref(db, `jadwal_pasien/${k}`)); });
         };
 
-        // ================= 5. SUHU & CHART (ORIGINAL) =================
+        document.getElementById('filterTglTabel').addEventListener('change', renderTabelJadwal);
+
+        // 6. SUHU & CHART
         const masterRuangan = ['USG', 'ADM RADIOLOGI', 'PANORAMIC', 'MRI', 'RONTGEN 1', 'RONTGEN 2', 'CT SCAN', 'RUANG RONTGEN MCU'];
-        const ctx = document.getElementById('suhuChart').getContext('2d');
-        const suhuChart = new Chart(ctx, {
+        const suhuChart = new Chart(document.getElementById('suhuChart').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: masterRuangan,
                 datasets: [
-                    { label: 'Suhu (°C)', backgroundColor: 'rgba(59, 130, 246, 0.7)', data: Array(8).fill(0) },
-                    { label: 'Lembab (%)', backgroundColor: 'rgba(20, 184, 166, 0.7)', data: Array(8).fill(0) }
+                    { label: 'Suhu (°C)', backgroundColor: '#3b82f6', borderRadius: 8, data: Array(8).fill(0) },
+                    { label: 'Lembab (%)', backgroundColor: '#14b8a6', borderRadius: 8, data: Array(8).fill(0) }
                 ]
             },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { grid: { display: false } } } }
         });
 
         document.getElementById('btnSimpanSuhu').addEventListener('click', () => {
-            const ruang = document.getElementById('suhuRuangan').value;
-            const suhu = parseFloat(document.getElementById('suhuDerajat').value);
-            const lembab = parseFloat(document.getElementById('suhuLembab').value);
-            if(ruang && !isNaN(suhu)) {
-                set(ref(db, `suhu_ruang/${ruang}`), { suhu, kelembaban: lembab, waktu_update: serverTimestamp() });
-                Swal.fire('Tersimpan!', 'Suhu berhasil diupdate', 'success');
-                document.getElementById('suhuDerajat').value = '';
-                document.getElementById('suhuLembab').value = '';
+            const r = document.getElementById('suhuRuangan').value;
+            const s = parseFloat(document.getElementById('suhuDerajat').value);
+            const l = parseFloat(document.getElementById('suhuLembab').value);
+            if(r && !isNaN(s)) {
+                set(ref(db, `suhu_ruang/${r}`), { suhu: s, kelembaban: l, waktu_update: serverTimestamp() });
+                Swal.fire('Tersimpan', 'Suhu berhasil diupdate', 'success');
             }
         });
 
         onValue(dbSuhu, (snap) => {
             const data = snap.val() || {};
-            const dSuhu = masterRuangan.map(r => data[r]?.suhu || 0);
-            const dLembab = masterRuangan.map(r => data[r]?.kelembaban || 0);
-            suhuChart.data.datasets[0].data = dSuhu;
-            suhuChart.data.datasets[1].data = dLembab;
+            suhuChart.data.datasets[0].data = masterRuangan.map(r => data[r]?.suhu || 0);
+            suhuChart.data.datasets[1].data = masterRuangan.map(r => data[r]?.kelembaban || 0);
             suhuChart.update();
         });
 
-        // ================= 6. OPERAN DINAS (ORIGINAL) =================
+        // 7. OPERAN & PDF LOGIC
         document.getElementById('btnSimpanOperan').addEventListener('click', () => {
             const checklist = [];
             document.querySelectorAll('#checklistContainer input').forEach(cb => checklist.push({nama_tugas: cb.value, status: cb.checked}));
@@ -565,14 +532,8 @@
                 checklist: checklist,
                 timestamp: serverTimestamp()
             };
-
             if(data.tanggal && data.shift && data.kepala_shift !== '-') {
-                push(dbOperan, data).then(() => {
-                    Swal.fire('Tersimpan!', 'Operan dinas berhasil dikunci.', 'success');
-                    switchTab('dashboard');
-                });
-            } else {
-                Swal.fire('Error', 'Tanggal, Shift, dan Nama wajib diisi!', 'error');
+                push(dbOperan, data).then(() => { Swal.fire('Tersimpan', 'Operan berhasil dikunci.', 'success'); switchTab('dashboard'); });
             }
         });
 
@@ -581,100 +542,55 @@
             const cont = document.getElementById('previewOperanContent');
             const badge = document.getElementById('previewShiftBadge');
             if(data) {
-                const keys = Object.keys(data);
-                const latest = data[keys[keys.length - 1]];
-                latestOperanData = latest; 
-                badge.innerText = `Shift ${latest.shift} - ${latest.tanggal}`;
-                let done = latest.checklist.filter(c => c.status).length;
-                cont.innerHTML = `
-                    <div class="p-3 bg-gray-50 rounded border">
-                        <p class="whitespace-pre-line"><strong>Catatan:</strong> ${latest.catatan || 'Tidak ada catatan.'}</p>
-                    </div>
-                    <div class="mt-2">
-                        <p class="text-xs font-bold mb-1">PIC: ${latest.kepala_shift} (${done}/${latest.checklist.length} Tugas)</p>
-                        ${latest.ttd_image ? `<img src="${latest.ttd_image}" class="h-10 border bg-white">` : ''}
+                const latest = Object.values(data).pop();
+                latestOperanData = latest;
+                badge.innerText = `Shift ${latest.shift} | ${latest.tanggal}`;
+                cont.innerHTML = `<p class="text-sm italic text-slate-500">"${latest.catatan || 'Tidak ada catatan khusus.'}"</p>
+                    <div class="flex items-center space-x-3 pt-4 border-t">
+                        <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xs">${latest.kepala_shift.charAt(0)}</div>
+                        <div><p class="text-xs font-bold">${latest.kepala_shift}</p><p class="text-[10px] text-slate-400">Kepala Shift</p></div>
                     </div>`;
-            } else {
-                cont.innerHTML = '<p class="text-gray-500 italic">Belum ada data.</p>';
-                badge.innerText = 'Kosong';
             }
         });
 
-        // ================= 7. CETAK PDF (ORIGINAL) =================
         document.getElementById('btnCetakPDF').addEventListener('click', () => {
-            if (!latestOperanData) {
-                Swal.fire('Gagal', 'Tidak ada data operan untuk dicetak', 'error');
-                return;
-            }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const l = latestOperanData;
-            doc.setFontSize(16);
-            doc.text("LAPORAN OPERAN DINAS RADIOLOGI", 105, 20, { align: 'center' });
-            doc.setFontSize(10);
-            doc.text(`Tanggal: ${l.tanggal}`, 14, 30);
-            doc.text(`Shift: ${l.shift}`, 14, 35);
-            doc.text(`Kepala Shift: ${l.kepala_shift}`, 14, 40);
-            const tableRows = l.checklist.map((item, index) => [index + 1, item.nama_tugas, item.status ? "[ V ] Selesai" : "[   ] Belum"]);
-            doc.autoTable({ startY: 50, head: [['No', 'Item Monitoring', 'Status']], body: tableRows, theme: 'grid', headStyles: { fillColor: [30, 58, 138] } });
+            if (!latestOperanData) return;
+            const { jsPDF } = window.jspdf; const doc = new jsPDF(); const l = latestOperanData;
+            doc.setFontSize(16); doc.text("LAPORAN OPERAN DINAS RADIOLOGI", 105, 20, { align: 'center' });
+            doc.setFontSize(10); doc.text(`Tanggal: ${l.tanggal} | Shift: ${l.shift} | PIC: ${l.kepala_shift}`, 14, 30);
+            const rows = l.checklist.map((it, idx) => [idx + 1, it.nama_tugas, it.status ? "SELESAI" : "BELUM"]);
+            doc.autoTable({ startY: 40, head: [['No', 'Monitoring Item', 'Status']], body: rows });
             const finalY = doc.lastAutoTable.finalY + 10;
-            doc.setFontSize(11);
-            doc.setFont(undefined, 'bold');
-            doc.text("Catatan Notulen:", 14, finalY);
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(10);
-            const splitCatatan = doc.splitTextToSize(l.catatan || "Tidak ada catatan khusus.", 180);
-            doc.text(splitCatatan, 14, finalY + 7);
-            const ttdY = finalY + 40;
-            doc.text("Kepala Shift,", 150, ttdY);
-            if (l.ttd_image) doc.addImage(l.ttd_image, 'PNG', 145, ttdY + 2, 40, 20);
-            doc.setFont(undefined, 'bold');
-            doc.text(l.kepala_shift, 150, ttdY + 30);
-            doc.save(`Operan_${l.tanggal}_Shift_${l.shift}.pdf`);
-            Swal.fire('Berhasil', 'Dokumen PDF telah dibuat', 'success');
+            doc.text("Catatan:", 14, finalY); doc.text(l.catatan || "-", 14, finalY + 7);
+            if (l.ttd_image) doc.addImage(l.ttd_image, 'PNG', 150, finalY + 10, 30, 15);
+            doc.save(`Operan_${l.tanggal}_${l.shift}.pdf`);
         });
 
-        // ================= 8. LOGIC REKAP LAPORAN (ORIGINAL) =================
+        // 8. REKAP
         document.getElementById('filterBulan').valueAsDate = new Date();
         document.getElementById('btnTampilkanRekap').addEventListener('click', async () => {
             const jenis = document.getElementById('filterJenis').value;
             const bulan = document.getElementById('filterBulan').value;
             const tBody = document.getElementById('rekapBody');
             const tHead = document.getElementById('rekapHeader');
-            tBody.innerHTML = '<tr><td colspan="5" class="text-center py-8">Mengambil data...</td></tr>';
+            tBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center">Loading...</td></tr>';
             
-            try {
-                if (jenis === 'operan') {
-                    tHead.innerHTML = `<tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Shift</th><th class="px-4 py-3">Kepala Shift</th><th class="px-4 py-3">Catatan</th><th class="px-4 py-3">Status Checklist</th></tr>`;
-                    const snapshot = await get(ref(db, 'operan_dinas'));
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        let html = '';
-                        Object.values(data).forEach(item => {
-                            if (item.tanggal && item.tanggal.startsWith(bulan)) {
-                                let doneCheck = item.checklist ? item.checklist.filter(c => c.status).length : 0;
-                                let totalCheck = item.checklist ? item.checklist.length : 0;
-                                let colorClass = doneCheck === totalCheck ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100';
-                                html += `<tr class="hover:bg-slate-50 border-b"><td class="px-4 py-3 font-semibold">${item.tanggal}</td><td class="px-4 py-3">${item.shift}</td><td class="px-4 py-3">${item.kepala_shift}</td><td class="px-4 py-3 max-w-xs truncate" title="${item.catatan}">${item.catatan || '-'}</td><td class="px-4 py-3"><span class="text-xs font-medium px-2.5 py-0.5 rounded ${colorClass}">${doneCheck}/${totalCheck} Selesai</span></td></tr>`;
-                            }
-                        });
-                        tBody.innerHTML = html || '<tr><td colspan="5" class="text-center py-8 text-gray-500">Tidak ada data di bulan ini.</td></tr>';
-                    }
-                } else if (jenis === 'jadwal') {
-                    tHead.innerHTML = `<tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Jam Rencana</th><th class="px-4 py-3">Nama Pasien</th><th class="px-4 py-3">Pemeriksaan</th></tr>`;
-                    const snapshot = await get(ref(db, 'jadwal_pasien'));
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        let html = '';
-                        Object.values(data).forEach(item => {
-                            if (item.tanggal && item.tanggal.startsWith(bulan)) {
-                                html += `<tr class="hover:bg-slate-50 border-b"><td class="px-4 py-3 font-semibold">${item.tanggal}</td><td class="px-4 py-3 font-bold">${item.jam}</td><td class="px-4 py-3">${item.nama}</td><td class="px-4 py-3">${item.periksa}</td></tr>`;
-                            }
-                        });
-                        tBody.innerHTML = html || '<tr><td colspan="4" class="text-center py-8 text-gray-500">Tidak ada data jadwal di bulan ini.</td></tr>';
-                    }
+            const snapshot = await get(ref(db, jenis === 'operan' ? 'operan_dinas' : 'jadwal_pasien'));
+            if (snapshot.exists()) {
+                let html = '';
+                if(jenis === 'operan') {
+                    tHead.innerHTML = `<tr><th class="px-6 py-4">Tgl</th><th class="px-6 py-4">Shift</th><th class="px-6 py-4">PIC</th><th class="px-6 py-4">Status</th></tr>`;
+                    Object.values(snapshot.val()).forEach(i => {
+                        if(i.tanggal.startsWith(bulan)) html += `<tr><td class="px-6 py-4 font-bold">${i.tanggal}</td><td class="px-6 py-4">${i.shift}</td><td class="px-6 py-4">${i.kepala_shift}</td><td class="px-6 py-4 text-xs">Done</td></tr>`;
+                    });
+                } else {
+                    tHead.innerHTML = `<tr><th class="px-6 py-4">Tgl</th><th class="px-6 py-4">Jam</th><th class="px-6 py-4">Pasien</th><th class="px-6 py-4">Tindakan</th></tr>`;
+                    Object.values(snapshot.val()).forEach(i => {
+                        if(i.tanggal.startsWith(bulan)) html += `<tr><td class="px-6 py-4">${i.tanggal}</td><td class="px-6 py-4 font-bold">${i.jam}</td><td class="px-6 py-4 font-medium">${i.nama}</td><td class="px-6 py-4">${i.periksa}</td></tr>`;
+                    });
                 }
-            } catch (error) { console.error(error); Swal.fire('Error', 'Gagal mengambil data.', 'error'); }
+                tBody.innerHTML = html || '<tr><td colspan="5" class="px-6 py-10 text-center italic">Tidak ada data.</td></tr>';
+            }
         });
     </script>
 </body>

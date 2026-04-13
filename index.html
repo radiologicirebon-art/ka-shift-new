@@ -74,6 +74,9 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto">
+        
+        <audio id="htAudio" autoplay></audio>
+
         <div class="md:hidden bg-white p-4 border-b flex justify-between items-center sticky top-0 z-30">
             <button onclick="toggleSidebar()" class="p-2 text-slate-600"><i class="fa-solid fa-bars-staggered text-2xl"></i></button>
             <div class="text-center">
@@ -301,7 +304,7 @@
             document.getElementById('txtTgl').innerText = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         }, 1000);
 
-        // --- INTERCOM HT LOGIC ---
+        // --- INTERCOM HT LOGIC (AUDIO FIX) ---
         peer.on('open', (id) => {
             myPeerId = id;
             const userRef = push(dbRefs.online);
@@ -324,10 +327,20 @@
             });
 
             peer.on('call', (call) => {
-                call.answer();
+                call.answer(); // Terima panggilan masuk secara otomatis
                 document.getElementById('incomingTransmission').classList.remove('hidden');
-                call.on('stream', (remStream) => { const audio = new Audio(); audio.srcObject = remStream; audio.play(); });
-                call.on('close', () => document.getElementById('incomingTransmission').classList.add('hidden'));
+                
+                call.on('stream', (remStream) => {
+                    // Mencegah audio browser diblokir dengan menempelkannya langsung ke tag <audio> di DOM
+                    const htAudio = document.getElementById('htAudio');
+                    htAudio.srcObject = remStream;
+                    htAudio.play().catch(e => console.error("Auto-play error:", e));
+                });
+                
+                call.on('close', () => {
+                    document.getElementById('incomingTransmission').classList.add('hidden');
+                    document.getElementById('htAudio').srcObject = null;
+                });
             });
 
             const pttBtn = document.getElementById('pttButton');

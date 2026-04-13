@@ -567,6 +567,8 @@
         });
 
         // 8. REKAP
+        window.dataOperanMap = {}; // Penampung data untuk pop-up view
+
         document.getElementById('filterBulan').valueAsDate = new Date();
         document.getElementById('btnTampilkanRekap').addEventListener('click', async () => {
             const jenis = document.getElementById('filterJenis').value;
@@ -579,9 +581,26 @@
             if (snapshot.exists()) {
                 let html = '';
                 if(jenis === 'operan') {
-                    tHead.innerHTML = `<tr><th class="px-6 py-4">Tgl</th><th class="px-6 py-4">Shift</th><th class="px-6 py-4">PIC</th><th class="px-6 py-4">Status</th></tr>`;
-                    Object.values(snapshot.val()).forEach(i => {
-                        if(i.tanggal.startsWith(bulan)) html += `<tr><td class="px-6 py-4 font-bold">${i.tanggal}</td><td class="px-6 py-4">${i.shift}</td><td class="px-6 py-4">${i.kepala_shift}</td><td class="px-6 py-4 text-xs">Done</td></tr>`;
+                    // Penambahan kolom Aksi untuk tombol View
+                    tHead.innerHTML = `<tr><th class="px-6 py-4">Tgl</th><th class="px-6 py-4">Shift</th><th class="px-6 py-4">PIC</th><th class="px-6 py-4">Status</th><th class="px-6 py-4 text-center">Aksi</th></tr>`;
+                    window.dataOperanMap = {}; // Reset data
+                    
+                    Object.entries(snapshot.val()).forEach(([id, i]) => {
+                        if(i.tanggal.startsWith(bulan)) {
+                            window.dataOperanMap[id] = i; // Simpan data per baris berdasarkan ID unik
+                            
+                            html += `<tr class="hover:bg-slate-50 transition">
+                                <td class="px-6 py-4 font-bold">${i.tanggal}</td>
+                                <td class="px-6 py-4">${i.shift}</td>
+                                <td class="px-6 py-4">${i.kepala_shift}</td>
+                                <td class="px-6 py-4 text-xs font-bold text-green-600">Done</td>
+                                <td class="px-6 py-4 text-center">
+                                    <button onclick="viewOperan('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition inline-flex items-center">
+                                        <i class="fa-solid fa-eye mr-1"></i> VIEW
+                                    </button>
+                                </td>
+                            </tr>`;
+                        }
                     });
                 } else {
                     tHead.innerHTML = `<tr><th class="px-6 py-4">Tgl</th><th class="px-6 py-4">Jam</th><th class="px-6 py-4">Pasien</th><th class="px-6 py-4">Tindakan</th></tr>`;
@@ -589,9 +608,64 @@
                         if(i.tanggal.startsWith(bulan)) html += `<tr><td class="px-6 py-4">${i.tanggal}</td><td class="px-6 py-4 font-bold">${i.jam}</td><td class="px-6 py-4 font-medium">${i.nama}</td><td class="px-6 py-4">${i.periksa}</td></tr>`;
                     });
                 }
-                tBody.innerHTML = html || '<tr><td colspan="5" class="px-6 py-10 text-center italic">Tidak ada data.</td></tr>';
+                tBody.innerHTML = html || '<tr><td colspan="5" class="px-6 py-10 text-center italic text-slate-500">Tidak ada data.</td></tr>';
+            } else {
+                tBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center italic text-slate-500">Tidak ada data.</td></tr>';
             }
         });
+
+        // Fungsi Global untuk Pop-up Detail Operan
+        window.viewOperan = function(id) {
+            const data = window.dataOperanMap[id];
+            if(!data) return;
+
+            let checklistHtml = '<div class="grid grid-cols-1 gap-2 mt-2 mb-4">';
+            if(data.checklist && data.checklist.length > 0) {
+                data.checklist.forEach(item => {
+                    const icon = item.status 
+                        ? '<i class="fa-solid fa-check-circle text-green-500 mr-2 text-lg"></i>' 
+                        : '<i class="fa-solid fa-times-circle text-red-500 mr-2 text-lg"></i>';
+                    const textColor = item.status ? 'text-slate-700' : 'text-slate-400 line-through';
+                    checklistHtml += `<div class="flex items-center text-sm ${textColor}">${icon} ${item.nama_tugas}</div>`;
+                });
+            } else {
+                checklistHtml += '<p class="text-sm italic text-slate-500">Tidak ada data checklist.</p>';
+            }
+            checklistHtml += '</div>';
+
+            const imgHtml = data.ttd_image 
+                ? `<div class="mt-4 border-t pt-4 text-center">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Tanda Tangan</p>
+                    <img src="${data.ttd_image}" class="h-20 mx-auto border border-dashed rounded-lg p-2 bg-white">
+                   </div>` 
+                : '';
+
+            Swal.fire({
+                title: `<div class="text-lg font-bold">Detail Laporan</div><div class="text-sm font-normal text-blue-600">Shift ${data.shift} - ${data.tanggal}</div>`,
+                html: `
+                    <div class="text-left bg-slate-50 p-5 rounded-2xl border">
+                        <div class="mb-4">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Kepala Shift</span>
+                            <p class="font-bold text-slate-800 text-base">${data.kepala_shift}</p>
+                        </div>
+                        <div class="border-t border-slate-200 pt-4 mb-4">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Status Monitoring</span>
+                            ${checklistHtml}
+                        </div>
+                        <div class="border-t border-slate-200 pt-4">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Catatan Operan</span>
+                            <div class="bg-white p-3 rounded-xl border text-sm italic text-slate-600 min-h-[60px]">
+                                "${data.catatan || 'Tidak ada catatan khusus yang ditinggalkan.'}"
+                            </div>
+                        </div>
+                        ${imgHtml}
+                    </div>
+                `,
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: '600px'
+            });
+        };
     </script>
 </body>
 </html>

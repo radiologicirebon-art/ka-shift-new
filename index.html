@@ -16,8 +16,6 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        
-        /* Mobile Sidebar Overlay */
         #sidebar { transition: transform 0.3s ease-in-out; }
         @media (max-width: 768px) {
             #sidebar { transform: translateX(-100%); position: fixed; height: 100%; z-index: 50; }
@@ -25,18 +23,11 @@
             .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
             .sidebar-overlay.show { display: block; }
         }
-
         .sidebar-btn.active { background-color: #0f172a; color: white; border-right: 4px solid #38bdf8; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
         .signature-container { border: 2px dashed #cbd5e1; border-radius: 8px; background: #fff; position: relative; height: 150px; width: 100%; }
         canvas { width: 100% !important; height: 100% !important; touch-action: none; }
-        
-        .bell-active { animation: ring 0.5s infinite; color: #ef4444; }
-        @keyframes ring { 0% { transform: rotate(0); } 25% { transform: rotate(10deg); } 50% { transform: rotate(-10deg); } 100% { transform: rotate(0); } }
-        
-        /* PTT Button Styling */
         .ptt-active { background-color: #ef4444 !important; transform: scale(0.92); box-shadow: 0 0 25px rgba(239, 68, 68, 0.6); }
         .transmitting-glow { animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
@@ -52,9 +43,7 @@
                 <h1 class="text-white font-bold text-xl tracking-tight"><i class="fa-solid fa-microscope text-sky-400 mr-2"></i>PRO-RAD</h1>
                 <p class="text-sky-300 text-[10px] uppercase tracking-widest mt-1">RS MITRA PLUMBON</p>
             </div>
-            <button class="md:hidden text-white" onclick="toggleSidebar()">
-                <i class="fa-solid fa-xmark text-2xl"></i>
-            </button>
+            <button class="md:hidden text-white" onclick="toggleSidebar()"><i class="fa-solid fa-xmark text-2xl"></i></button>
         </div>
         
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -85,11 +74,8 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto">
-        
         <div class="md:hidden bg-white p-4 border-b flex justify-between items-center sticky top-0 z-30">
-            <button onclick="toggleSidebar()" class="p-2 text-slate-600">
-                <i class="fa-solid fa-bars-staggered text-2xl"></i>
-            </button>
+            <button onclick="toggleSidebar()" class="p-2 text-slate-600"><i class="fa-solid fa-bars-staggered text-2xl"></i></button>
             <div class="text-center">
                 <span class="block font-bold text-slate-800 text-sm">PRO-RADIOLOGY</span>
                 <span class="block text-[8px] text-sky-600 font-bold uppercase tracking-widest">Mobile Terminal</span>
@@ -129,28 +115,21 @@
 
             <div class="bg-white p-5 rounded-2xl shadow-sm border">
                 <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-sky-500"></i> Pengingat Jadwal Pasien</h4>
-                <div id="dashJadwalList" class="space-y-3">
-                    <p class="text-xs text-slate-400 italic">Memuat jadwal...</p>
-                </div>
+                <div id="dashJadwalList" class="space-y-3"></div>
             </div>
         </section>
 
         <section id="intercom" class="tab-content p-4 md:p-8">
             <div class="max-w-md mx-auto">
                 <div class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border text-center">
-                    <div class="mb-6">
-                        <span class="bg-sky-100 text-sky-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Realtime Network</span>
-                        <h2 class="text-2xl font-black text-slate-800 mt-2">HT Intercom</h2>
-                    </div>
-
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">HT Intercom</h2>
                     <div id="pttCircle" class="w-56 h-56 bg-slate-50 rounded-full mx-auto flex items-center justify-center border-[12px] border-white shadow-inner transition-all select-none cursor-pointer mb-8">
                         <div id="pttButton" class="w-44 h-44 bg-sky-600 rounded-full flex flex-col items-center justify-center text-white shadow-2xl active:bg-red-600 transition-all">
                             <i class="fa-solid fa-microphone text-5xl mb-3"></i>
                             <span class="font-black text-xs uppercase tracking-widest">Tekan & Tahan</span>
                         </div>
                     </div>
-
-                    <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                    <div class="bg-slate-50 p-4 rounded-3xl border">
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-[10px] font-bold text-slate-400 uppercase">Petugas Aktif</span>
                             <span id="onlineCount" class="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
@@ -158,7 +137,6 @@
                         <div id="onlineUsersList" class="grid grid-cols-2 gap-2"></div>
                     </div>
                 </div>
-
                 <div id="incomingTransmission" class="hidden mt-6 animate-pulse bg-red-600 p-4 rounded-2xl text-white flex items-center justify-center gap-3 shadow-lg">
                     <i class="fa-solid fa-volume-high text-xl"></i>
                     <span class="font-bold text-sm tracking-wide">MENERIMA PANGGILAN...</span>
@@ -168,73 +146,54 @@
 
         <section id="operan" class="tab-content p-4 md:p-8">
             <div class="bg-white rounded-3xl shadow-xl border overflow-hidden">
-                <div class="bg-slate-900 p-6 text-white text-center">
-                    <h2 class="text-xl font-bold uppercase tracking-tight">Form Operan Dinas</h2>
-                </div>
+                <div class="bg-slate-900 p-6 text-white text-center"><h2 class="text-xl font-bold uppercase">Form Operan Dinas</h2></div>
                 <div class="p-5 md:p-8 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tanggal</label>
-                            <input type="date" id="opTanggal" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 ring-sky-500">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Shift Kerja</label>
-                            <select id="opShift" class="w-full p-3 bg-slate-50 border rounded-xl outline-none">
-                                <option>Pagi (07.30 - 14.30)</option>
-                                <option>Siang (14.30 - 21.30)</option>
-                                <option>Malam (21.30 - 07.30)</option>
-                            </select>
-                        </div>
+                        <input type="date" id="opTanggal" class="w-full p-3 bg-slate-50 border rounded-xl outline-none">
+                        <select id="opShift" class="w-full p-3 bg-slate-50 border rounded-xl outline-none">
+                            <option>Pagi (07.30 - 14.30)</option>
+                            <option>Siang (14.30 - 21.30)</option>
+                            <option>Malam (21.30 - 07.30)</option>
+                        </select>
                     </div>
-
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Checklist Tugas</label>
-                        <div id="checklistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
-                    </div>
-
-                    <textarea id="opCatatan" rows="3" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 ring-sky-500" placeholder="Tulis catatan penting di sini..."></textarea>
-                    
+                    <div id="checklistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+                    <textarea id="opCatatan" rows="3" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" placeholder="Tulis catatan penting di sini..."></textarea>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-3">
                             <input type="text" id="ttdNama" placeholder="Nama Petugas" oninput="updateAutoText()" class="w-full p-3 border-b-2 bg-transparent outline-none font-bold">
-                            <input type="text" id="ttdGelar" placeholder="Gelar (Contoh: Amd.Rad)" oninput="updateAutoText()" class="w-full p-3 border-b-2 bg-transparent outline-none text-sm text-slate-500">
+                            <input type="text" id="ttdGelar" placeholder="Gelar" oninput="updateAutoText()" class="w-full p-3 border-b-2 bg-transparent outline-none text-sm text-slate-500">
                         </div>
-                        <div class="signature-container mx-auto md:mx-0">
+                        <div class="signature-container">
                             <canvas id="canvasOperan"></canvas>
                             <div class="absolute bottom-2 left-0 right-0 text-center">
                                 <p id="txtTtdAuto" class="text-[10px] font-bold border-t mx-4 pt-1">-</p>
-                                <button onclick="padOperan.clear()" class="text-[9px] text-red-500 font-black uppercase tracking-widest">Hapus Tanda Tangan</button>
+                                <button onclick="padOperan.clear()" class="text-[9px] text-red-500 font-black uppercase">Hapus TTD</button>
                             </div>
                         </div>
                     </div>
-                    <button id="btnSimpanOperan" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black shadow-lg shadow-sky-100 hover:bg-sky-700 transition-all">SIMPAN LAPORAN</button>
+                    <button id="btnSimpanOperan" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black">SIMPAN LAPORAN</button>
                 </div>
             </div>
         </section>
 
         <section id="pmi" class="tab-content p-4 md:p-8">
             <div class="bg-white rounded-3xl shadow-xl border overflow-hidden">
-                <div class="p-6 bg-amber-600 text-white font-black text-center uppercase tracking-widest">Monitoring Mutu (PMI)</div>
+                <div class="p-6 bg-amber-600 text-white font-black text-center uppercase">Monitoring Mutu (PMI)</div>
                 <div class="p-5 md:p-8 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="date" id="pmiTanggal" class="p-3 border rounded-xl outline-none text-sm">
                         <select id="pmiAlat" class="p-3 border rounded-xl font-bold text-sm outline-none">
                             <option>CT-SCAN Hitachi Supria</option>
                             <option>X-RAY Konvensional</option>
-                            <option>USG Samsung</option>
                         </select>
                     </div>
-                    
-                    <div class="overflow-x-auto rounded-xl border">
-                        <table class="w-full text-[10px] text-left" id="tablePmiA"></table>
-                    </div>
-
+                    <div class="overflow-x-auto rounded-xl border"><table class="w-full text-[10px] text-left" id="tablePmiA"></table></div>
                     <div class="p-4 bg-slate-50 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6">
                         <div class="text-center md:text-left">
                             <p class="font-bold text-xs uppercase mb-3">Status Kelayakan Alat:</p>
                             <div class="flex gap-6">
-                                <label class="flex items-center font-bold text-emerald-600 cursor-pointer"><input type="radio" name="pmiKesimpulan" value="Layak Operasional" class="mr-2"> LAYAK</label>
-                                <label class="flex items-center font-bold text-red-600 cursor-pointer"><input type="radio" name="pmiKesimpulan" value="Tidak Layak" class="mr-2"> TIDAK</label>
+                                <label class="flex items-center font-bold text-emerald-600"><input type="radio" name="pmiKesimpulan" value="Layak Operasional" class="mr-2"> LAYAK</label>
+                                <label class="flex items-center font-bold text-red-600"><input type="radio" name="pmiKesimpulan" value="Tidak Layak" class="mr-2"> TIDAK</label>
                             </div>
                         </div>
                         <div class="w-full md:w-56 text-center">
@@ -251,25 +210,17 @@
         <section id="jadwal" class="tab-content p-4 md:p-8">
             <div class="max-w-4xl mx-auto space-y-6">
                 <div class="bg-white p-6 rounded-3xl shadow-xl border">
-                    <h2 class="font-black text-slate-800 mb-5 flex items-center gap-2"><i class="fa-solid fa-plus-circle text-emerald-500"></i> Tambah Jadwal</h2>
+                    <h2 class="font-black text-slate-800 mb-5">Tambah Jadwal</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <input type="date" id="jdTanggal" class="p-3 bg-slate-50 border rounded-xl text-xs">
                         <input type="time" id="jdJam" class="p-3 bg-slate-50 border rounded-xl text-xs">
                         <input type="text" id="jdNama" placeholder="Nama Pasien" class="p-3 bg-slate-50 border rounded-xl text-xs">
-                        <input type="text" id="jdPeriksa" placeholder="Jenis Pemeriksaan" class="p-3 bg-slate-50 border rounded-xl text-xs">
+                        <input type="text" id="jdPeriksa" placeholder="Pemeriksaan" class="p-3 bg-slate-50 border rounded-xl text-xs">
                     </div>
-                    <button id="btnSimpanJadwal" class="w-full mt-4 py-4 bg-emerald-600 text-white rounded-xl font-black text-sm shadow-lg shadow-emerald-100 uppercase">Input Jadwal</button>
+                    <button id="btnSimpanJadwal" class="w-full mt-4 py-4 bg-emerald-600 text-white rounded-xl font-black text-sm uppercase">Input Jadwal</button>
                 </div>
-                
                 <div class="bg-white rounded-3xl shadow-xl border overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-50 font-bold text-slate-400 uppercase tracking-widest border-b">
-                                <tr><th class="p-5">Waktu</th><th class="p-5">Pasien</th><th class="p-5">Pemeriksaan</th><th class="p-5 text-center">Aksi</th></tr>
-                            </thead>
-                            <tbody id="tableJadwalBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50 font-bold border-b"><tr><th class="p-5">Waktu</th><th class="p-5">Pasien</th><th class="p-5">Pemeriksaan</th><th class="p-5 text-center">Aksi</th></tr></thead><tbody id="tableJadwalBody" class="divide-y"></tbody></table></div>
                 </div>
             </div>
         </section>
@@ -279,22 +230,12 @@
                 <div class="p-6 bg-slate-900 text-white">
                     <h2 class="text-xl font-bold mb-4">Arsip Laporan</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <select id="filterJenis" class="bg-slate-800 p-3 rounded-xl text-xs border-none outline-none">
-                            <option value="operan">Laporan Operan</option>
-                            <option value="mutu">Laporan PMI</option>
-                        </select>
+                        <select id="filterJenis" class="bg-slate-800 p-3 rounded-xl text-xs border-none outline-none"><option value="operan">Laporan Operan</option><option value="mutu">Laporan PMI</option></select>
                         <input type="month" id="filterBulan" class="bg-slate-800 p-3 rounded-xl text-xs border-none outline-none">
                         <button id="btnTampilkanRekap" class="bg-sky-500 py-3 rounded-xl text-xs font-black uppercase">Cari Data</button>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead id="rekapHeader" class="bg-slate-50 border-b font-bold text-slate-400 uppercase tracking-widest"></thead>
-                        <tbody id="rekapBody" class="divide-y">
-                            <tr><td colspan="5" class="text-center p-20 text-slate-400 italic">Gunakan filter untuk menampilkan data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead id="rekapHeader" class="bg-slate-50 border-b font-bold text-slate-400 uppercase"></thead><tbody id="rekapBody" class="divide-y"></tbody></table></div>
             </div>
         </section>
     </main>
@@ -319,7 +260,6 @@
         let myPeerId = "", myName = "", activeCalls = [], localStream = null;
         const peer = new Peer();
 
-        // --- MOBILE NAV LOGIC ---
         window.toggleSidebar = () => {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('show');
@@ -333,30 +273,18 @@
             if(id === 'operan' || id === 'pmi') setTimeout(resizeCanvas, 300);
         };
 
-        // --- UTILS & CLOCK ---
         setInterval(() => {
             const now = new Date();
             document.getElementById('txtJam').innerText = now.toLocaleTimeString('id-ID');
             document.getElementById('txtTgl').innerText = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         }, 1000);
 
-        // --- HT INTERCOM LOGIC ---
         peer.on('open', (id) => {
             myPeerId = id;
-            Swal.fire({
-                title: 'Identitas Mobile',
-                text: 'Masukkan nama Anda untuk komunikasi HT',
-                input: 'text',
-                allowOutsideClick: false,
-                confirmButtonText: 'Online',
-                confirmButtonColor: '#0284c7'
-            }).then(res => {
-                myName = res.value || "User-" + id.substr(0,4);
-                const userRef = push(dbRefs.online);
-                set(userRef, { name: myName, peerId: myPeerId });
-                onDisconnect(userRef).remove();
-                setupHT();
-            });
+            const userRef = push(dbRefs.online);
+            set(userRef, { name: "User-" + id.substr(0,4), peerId: myPeerId });
+            onDisconnect(userRef).remove();
+            setupHT();
         });
 
         function setupHT() {
@@ -367,7 +295,7 @@
                     const users = Object.values(snap.val());
                     document.getElementById('onlineCount').innerText = users.length;
                     users.forEach(u => {
-                        if(u.peerId !== myPeerId) list.innerHTML += `<div class="p-2 bg-white border rounded-xl text-[10px] font-bold flex items-center gap-2 shadow-sm"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> ${u.name}</div>`;
+                        if(u.peerId !== myPeerId) list.innerHTML += `<div class="p-2 bg-white border rounded-xl text-[10px] font-bold shadow-sm">${u.name}</div>`;
                     });
                 }
             });
@@ -381,64 +309,40 @@
 
             const pttBtn = document.getElementById('pttButton');
             const startMic = async () => {
-                try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    pttBtn.classList.add('ptt-active');
-                    document.getElementById('pttCircle').classList.add('transmitting-glow');
-                    const snap = await get(dbRefs.online);
-                    if(snap.exists()){
-                        Object.values(snap.val()).forEach(u => {
-                            if(u.peerId !== myPeerId) activeCalls.push(peer.call(u.peerId, localStream));
-                        });
-                    }
-                } catch(e) { Swal.fire('Error Mic', 'Pastikan izin mic diberikan', 'error'); }
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                pttBtn.classList.add('ptt-active');
+                document.getElementById('pttCircle').classList.add('transmitting-glow');
+                const snap = await get(dbRefs.online);
+                if(snap.exists()){
+                    Object.values(snap.val()).forEach(u => {
+                        if(u.peerId !== myPeerId) activeCalls.push(peer.call(u.peerId, localStream));
+                    });
+                }
             };
             const stopMic = () => {
                 pttBtn.classList.remove('ptt-active');
                 document.getElementById('pttCircle').classList.remove('transmitting-glow');
                 if(localStream) localStream.getTracks().forEach(t => t.stop());
-                activeCalls.forEach(c => c.close());
-                activeCalls = [];
+                activeCalls.forEach(c => c.close()); activeCalls = [];
             };
-            
             pttBtn.onmousedown = startMic; pttBtn.onmouseup = stopMic;
             pttBtn.ontouchstart = (e) => { e.preventDefault(); startMic(); };
             pttBtn.ontouchend = (e) => { e.preventDefault(); stopMic(); };
         }
 
-        // --- DASHBOARD & EMERGENCY ---
         document.getElementById('btnBellTrigger').onclick = () => set(dbRefs.bel, { waktu: serverTimestamp(), id: Math.random() });
         onValue(dbRefs.bel, (snap) => {
             if(snap.exists()){
                 const card = document.getElementById('statusBelCard'), txt = document.getElementById('txtStatusBel');
                 card.classList.replace('border-slate-200', 'border-red-500');
                 txt.innerText = "EMERGENCY!"; txt.classList.replace('text-slate-400', 'text-red-600');
-                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                Swal.fire({ title: 'EMERGENCY', text: 'Panggilan Darurat Radiologi!', icon: 'warning', confirmButtonColor: '#ef4444' }).then(() => {
+                Swal.fire({ title: 'EMERGENCY', text: 'Panggilan Darurat!', icon: 'warning' }).then(() => {
                     card.classList.replace('border-red-500', 'border-slate-200');
                     txt.innerText = "STANDBY"; txt.classList.replace('text-red-600', 'text-slate-400');
                 });
             }
         });
 
-        // --- JADWAL ---
-        document.getElementById('btnSimpanJadwal').onclick = () => {
-            const d = { tanggal: document.getElementById('jdTanggal').value, jam: document.getElementById('jdJam').value, nama: document.getElementById('jdNama').value, periksa: document.getElementById('jdPeriksa').value };
-            if(d.nama) push(dbRefs.jadwal, d).then(() => Swal.fire({toast:true, position:'top-end', icon:'success', title:'Jadwal ditambahkan', showConfirmButton:false, timer:1500}));
-        };
-        onValue(dbRefs.jadwal, (snap) => {
-            const body = document.getElementById('tableJadwalBody'), dash = document.getElementById('dashJadwalList');
-            body.innerHTML = ""; dash.innerHTML = "";
-            if(snap.exists()){
-                Object.entries(snap.val()).forEach(([key, i]) => {
-                    body.innerHTML += `<tr><td class="p-5 font-bold text-sky-600">${i.jam}</td><td class="p-5 font-medium">${i.nama}</td><td class="p-5 text-slate-500">${i.periksa}</td><td class="p-5 text-center"><button class="text-red-400 hover:text-red-600" onclick="removeData('jadwal_pasien/${key}')"><i class="fa-solid fa-circle-minus text-lg"></i></button></td></tr>`;
-                    dash.innerHTML += `<div class="p-3 bg-slate-50 border-l-4 border-sky-500 rounded-r-xl text-[10px] font-bold flex justify-between items-center shadow-sm"><div><span class="text-sky-600 mr-2">${i.jam}</span><span>${i.nama}</span></div><span class="text-slate-400 italic font-medium">${i.periksa}</span></div>`;
-                });
-            } else { dash.innerHTML = '<p class="text-xs text-slate-400 italic">Tidak ada jadwal aktif.</p>'; }
-        });
-        window.removeData = (path) => remove(ref(db, path));
-
-        // --- SIGNATURE PADS ---
         const padOperan = new SignaturePad(document.getElementById('canvasOperan'));
         const padPmi = new SignaturePad(document.getElementById('canvasPmi'));
         window.padOperan = padOperan; window.padPmi = padPmi;
@@ -457,18 +361,61 @@
             document.getElementById('txtTtdAuto').innerText = n ? `${n}${g ? ', ' + g : ''}` : '-';
         };
 
-        // --- FORM RENDER ---
-        const checklist = ["Kebersihan Ruangan & Alat", "Update Data SIMRS", "Pengecekan Stok BHP", "Serah Terima Berkas", "Suhu Kelembaban 20-24°C"];
-        checklist.forEach(t => document.getElementById('checklistContainer').innerHTML += `<label class="flex items-center p-3 bg-slate-50 border rounded-xl text-[10px] font-bold cursor-pointer hover:bg-sky-50 transition-colors"><input type="checkbox" class="op-check mr-3 w-4 h-4 text-sky-600" data-task="${t}">${t}</label>`);
+        const checklist = ["Kebersihan Ruangan", "Update SIMRS", "Stok BHP", "Serah Terima Berkas", "Suhu Ruangan"];
+        checklist.forEach(t => document.getElementById('checklistContainer').innerHTML += `<label class="flex items-center p-3 bg-slate-50 border rounded-xl text-[10px] font-bold"><input type="checkbox" class="op-check mr-3" data-task="${t}">${t}</label>`);
 
-        const pmiParams = [{p:"Kebersihan Unit", s:"Bersih"}, {p:"Kondisi Fisik", s:"Baik"}, {p:"Indikator Power", s:"Hijau/On"}];
-        const tablePmiA = document.getElementById('tablePmiA');
-        tablePmiA.innerHTML = `<thead class="bg-slate-50"><tr><th class="p-3 border">Parameter</th><th class="p-3 border text-center">Ya</th><th class="p-3 border text-center">Tdk</th></tr></thead><tbody>`;
-        pmiParams.forEach((it, idx) => {
-            tablePmiA.innerHTML += `<tr><td class="p-3 border font-medium">${it.p}</td><td class="p-3 border text-center"><input type="radio" name="pmiA_${idx}" value="Ya" class="w-4 h-4"></td><td class="p-3 border text-center"><input type="radio" name="pmiA_${idx}" value="Tidak" class="w-4 h-4"></td></tr>`;
-        });
+        // --- PDF ENGINE FIXED (INCLUDING CATATAN) ---
+        window.viewPDF = (type, data) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(14);
+            doc.text(type === 'operan' ? "LAPORAN OPERAN DINAS RADIOLOGI" : "LAPORAN PMI RADIOLOGI", 105, 15, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`RS MITRA PLUMBON | Tgl: ${data.tanggal}`, 14, 25);
+            
+            if(type === 'operan') {
+                // Table
+                doc.autoTable({
+                    startY: 30,
+                    head: [['Tugas', 'Status']],
+                    body: data.checklist.map(c => [c.nama_tugas, c.status ? "OK" : "BELUM"])
+                });
 
-        // --- SAVE FORMS ---
+                // --- BAGIAN CATATAN PENTING ---
+                let finalY = doc.lastAutoTable.finalY + 10;
+                doc.setFont(undefined, 'bold');
+                doc.text("Catatan Penting:", 14, finalY);
+                
+                doc.setFont(undefined, 'normal');
+                const splitCatatan = doc.splitTextToSize(data.catatan || "-", 180);
+                doc.text(splitCatatan, 14, finalY + 7);
+
+                // Signature Position (dynamic based on notes length)
+                let sigY = finalY + 15 + (splitCatatan.length * 5);
+                if(data.ttd_image) {
+                    doc.addImage(data.ttd_image, 'PNG', 150, sigY, 35, 15);
+                    doc.text(data.kepala_shift, 150, sigY + 20, { align: 'left' });
+                }
+            } else {
+                // PMI Table
+                doc.autoTable({
+                    startY: 30,
+                    head: [['Parameter', 'Status']],
+                    body: data.partA.map(p => [p.parameter, p.ya ? "YA" : "TIDAK"])
+                });
+                let sigY = doc.lastAutoTable.finalY + 10;
+                if(data.ttd_image) {
+                    doc.addImage(data.ttd_image, 'PNG', 150, sigY, 35, 15);
+                    doc.text(data.petugas, 150, sigY + 20, { align: 'left' });
+                }
+            }
+
+            doc.save(`${type}_${data.tanggal}.pdf`);
+        };
+
+        // --- DATA SYNC ---
         document.getElementById('btnSimpanOperan').onclick = () => {
             const data = {
                 tanggal: document.getElementById('opTanggal').value, shift: document.getElementById('opShift').value,
@@ -476,54 +423,48 @@
                 checklist: Array.from(document.querySelectorAll('.op-check')).map(c => ({ nama_tugas: c.dataset.task, status: c.checked })),
                 ttd_image: padOperan.isEmpty() ? '' : padOperan.toDataURL(), timestamp: serverTimestamp()
             };
-            if(!data.tanggal || !data.kepala_shift) return Swal.fire('Error', 'Lengkapi data petugas & tgl', 'error');
-            push(dbRefs.operan, data).then(() => { Swal.fire('Tersimpan','Laporan operan berhasil terkirim','success'); switchTab('dashboard'); });
+            push(dbRefs.operan, data).then(() => { Swal.fire('Berhasil','Laporan tersimpan','success'); switchTab('dashboard'); });
         };
 
-        document.getElementById('btnSimpanPMI').onclick = () => {
-            const data = {
-                tanggal: document.getElementById('pmiTanggal').value, alat: document.getElementById('pmiAlat').value,
-                kesimpulan: document.querySelector('input[name="pmiKesimpulan"]:checked')?.value, petugas: document.getElementById('pmiNama').value,
-                ttd_image: padPmi.isEmpty() ? '' : padPmi.toDataURL(), timestamp: serverTimestamp(),
-                partA: pmiParams.map((it, idx) => ({ parameter: it.p, ya: document.querySelector(`input[name="pmiA_${idx}"]:checked`)?.value==='Ya' }))
-            };
-            push(dbRefs.mutu, data).then(() => { Swal.fire('Berhasil','Laporan PMI tersimpan','success'); switchTab('dashboard'); });
-        };
-
-        // --- REKAP & PDF ENGINE ---
         document.getElementById('btnTampilkanRekap').onclick = async () => {
             const jenis = document.getElementById('filterJenis').value, bulan = document.getElementById('filterBulan').value;
             const tBody = document.getElementById('rekapBody'), tHead = document.getElementById('rekapHeader');
-            tBody.innerHTML = '<tr><td colspan="5" class="text-center p-12">Mencari data...</td></tr>';
+            tBody.innerHTML = '<tr><td colspan="5" class="text-center p-12">Mencari...</td></tr>';
             const snap = await get(ref(db, jenis === 'operan' ? 'operan_dinas' : 'mutu_alat'));
             if(snap.exists()){
                 const dataArr = Object.values(snap.val()).filter(i => i.tanggal && i.tanggal.startsWith(bulan));
                 let html = '';
                 if(jenis === 'operan'){
-                    tHead.innerHTML = `<tr><th class="p-4">Tanggal</th><th class="p-4">Shift</th><th class="p-4">Petugas</th><th class="p-4">Aksi</th></tr>`;
-                    dataArr.forEach(i => html += `<tr><td class="p-4 font-bold">${i.tanggal}</td><td class="p-4">${i.shift.split(' ')[0]}</td><td class="p-4">${i.kepala_shift}</td><td class="p-4"><button onclick='viewPDF("operan", ${JSON.stringify(i)})' class="bg-sky-500 text-white p-2 rounded-lg text-[9px] font-bold"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button></td></tr>`);
+                    tHead.innerHTML = `<tr><th class="p-4">Tgl</th><th class="p-4">Shift</th><th class="p-4">PIC</th><th class="p-4">Aksi</th></tr>`;
+                    dataArr.forEach(i => html += `<tr><td class="p-4">${i.tanggal}</td><td class="p-4">${i.shift.split(' ')[0]}</td><td class="p-4">${i.kepala_shift}</td><td class="p-4"><button onclick='viewPDF("operan", ${JSON.stringify(i)})' class="bg-sky-500 text-white p-2 rounded text-[9px]">PDF</button></td></tr>`);
                 } else {
-                    tHead.innerHTML = `<tr><th class="p-4">Tanggal</th><th class="p-4">Alat</th><th class="p-4">Status</th><th class="p-4">Aksi</th></tr>`;
-                    dataArr.forEach(i => html += `<tr><td class="p-4 font-bold">${i.tanggal}</td><td class="p-4">${i.alat}</td><td class="p-4 font-black text-amber-600 uppercase">${i.kesimpulan.split(' ')[0]}</td><td class="p-4"><button onclick='viewPDF("mutu", ${JSON.stringify(i)})' class="bg-amber-500 text-white p-2 rounded-lg text-[9px] font-bold"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button></td></tr>`);
+                    tHead.innerHTML = `<tr><th class="p-4">Tgl</th><th class="p-4">Alat</th><th class="p-4">Status</th><th class="p-4">Aksi</th></tr>`;
+                    dataArr.forEach(i => html += `<tr><td class="p-4">${i.tanggal}</td><td class="p-4">${i.alat}</td><td class="p-4">${i.kesimpulan}</td><td class="p-4"><button onclick='viewPDF("mutu", ${JSON.stringify(i)})' class="bg-amber-500 text-white p-2 rounded text-[9px]">PDF</button></td></tr>`);
                 }
-                tBody.innerHTML = html || '<tr><td colspan="5" class="text-center p-10 italic">Data tidak ditemukan.</td></tr>';
+                tBody.innerHTML = html || '<tr><td colspan="5" class="text-center p-10">Data kosong</td></tr>';
             }
         };
 
-        window.viewPDF = (type, data) => {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.setFontSize(14); doc.text(type === 'operan' ? "LAPORAN OPERAN DINAS RADIOLOGI" : "LAPORAN PMI RADIOLOGI", 105, 15, { align: 'center' });
-            doc.setFontSize(10); doc.text(`RS MITRA PLUMBON | Tgl: ${data.tanggal}`, 14, 25);
-            if(type === 'operan') doc.autoTable({ startY: 30, head: [['Tugas', 'Status']], body: data.checklist.map(c => [c.nama_tugas, c.status ? "OK" : "BELUM"]) });
-            else doc.autoTable({ startY: 30, head: [['Parameter', 'Ya/Tidak']], body: data.partA.map(p => [p.parameter, p.ya ? "YA" : "TIDAK"]) });
-            if(data.ttd_image) doc.addImage(data.ttd_image, 'PNG', 150, doc.lastAutoTable.finalY + 10, 35, 15);
-            doc.save(`${type}_${data.tanggal}.pdf`);
+        // Jadwal logic
+        document.getElementById('btnSimpanJadwal').onclick = () => {
+            const d = { tanggal: document.getElementById('jdTanggal').value, jam: document.getElementById('jdJam').value, nama: document.getElementById('jdNama').value, periksa: document.getElementById('jdPeriksa').value };
+            if(d.nama) push(dbRefs.jadwal, d);
         };
+        onValue(dbRefs.jadwal, (snap) => {
+            const body = document.getElementById('tableJadwalBody'), dash = document.getElementById('dashJadwalList');
+            body.innerHTML = ""; dash.innerHTML = "";
+            if(snap.exists()){
+                Object.entries(snap.val()).forEach(([key, i]) => {
+                    body.innerHTML += `<tr><td class="p-5">${i.jam}</td><td class="p-5 font-bold">${i.nama}</td><td class="p-5">${i.periksa}</td><td class="p-5 text-center"><button class="text-red-500" onclick="removeData('jadwal_pasien/${key}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                    dash.innerHTML += `<div class="p-3 bg-slate-50 border-l-4 border-sky-500 rounded text-[10px] font-bold flex justify-between"><span>${i.jam} - ${i.nama}</span><span>${i.periksa}</span></div>`;
+                });
+            }
+        });
+        window.removeData = (path) => remove(ref(db, path));
 
-        // --- REALTIME DASHBOARD SYNC ---
         onValue(dbRefs.suhu, (s) => { if(s.exists()) document.getElementById('dashSuhu').innerHTML = `${s.val().USG.suhu}<span class="text-base text-slate-300">°C</span>`; });
         onValue(dbRefs.operan, (s) => { if(s.exists()){ const itm = Object.values(s.val()); const last = itm[itm.length-1]; document.getElementById('previewOperanContent').innerText = `${last.shift.split(' ')[0]} - ${last.kepala_shift}`; } });
-        onValue(dbRefs.mutu, (s) => { if(s.exists()){ const itm = Object.values(s.val()); const last = itm[itm.length-1]; document.getElementById('previewPmiContent').innerText = `${last.alat}: ${last.kesimpulan.split(' ')[0]}`; } });
+        onValue(dbRefs.mutu, (s) => { if(s.exists()){ const itm = Object.values(s.val()); const last = itm[itm.length-1]; document.getElementById('previewPmiContent').innerText = `${last.kesimpulan}`; } });
 
     </script>
 </body>

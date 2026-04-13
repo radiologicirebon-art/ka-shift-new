@@ -124,6 +124,17 @@
 
         <section id="intercom" class="tab-content p-4 md:p-8">
             <div class="max-w-md mx-auto">
+                <!-- Banner unlock audio - muncul sampai user klik -->
+                <div id="audioUnlockBanner" class="mb-4 bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex items-center gap-4">
+                    <i class="fa-solid fa-volume-xmark text-amber-500 text-2xl flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <p class="text-xs font-black text-amber-700 uppercase">Audio Browser Terkunci</p>
+                        <p class="text-[10px] text-amber-600 mt-0.5">Klik tombol ini sekali untuk mengaktifkan suara HT</p>
+                    </div>
+                    <button id="btnUnlockAudio" onclick="unlockHtAudio()" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-wide flex-shrink-0">
+                        Aktifkan
+                    </button>
+                </div>
                 <div class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border text-center">
                     <h2 class="text-2xl font-black text-slate-800 mb-6">HT Intercom</h2>
                     <div id="pttCircle" class="w-56 h-56 bg-slate-50 rounded-full mx-auto flex items-center justify-center border-[12px] border-white shadow-inner transition-all select-none cursor-pointer mb-8">
@@ -304,7 +315,44 @@
             document.getElementById('txtTgl').innerText = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         }, 1000);
 
-        // --- INTERCOM HT LOGIC (AUDIO FIX) ---
+        // --- INTERCOM HT LOGIC ---
+        let audioCtx = null;
+        let htAudioUnlocked = false;
+        let pendingStream = null;
+
+        // Fungsi unlock audio - dipanggil dari tombol di banner
+        window.unlockHtAudio = () => {
+            // Buat AudioContext dari gesture user - ini kunci utama bypass autoplay policy
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Pre-play audio element dengan silence agar browser "membuka kunci"
+            const htAudio = document.getElementById('htAudio');
+            htAudio.muted = false;
+            htAudio.volume = 1.0;
+
+            // Sembunyikan banner, tandai sudah unlock
+            htAudioUnlocked = true;
+            const banner = document.getElementById('audioUnlockBanner');
+            banner.innerHTML = '<i class="fa-solid fa-volume-high text-emerald-500 text-xl mr-3"></i><span class="text-xs font-black text-emerald-700">Audio HT Aktif — Siap Menerima Suara</span>';
+            banner.className = 'mb-4 bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 flex items-center';
+
+            // Jika ada stream yang tertunda, langsung putar sekarang
+            if(pendingStream) {
+                playHtStream(pendingStream);
+                pendingStream = null;
+            }
+        };
+
+        function playHtStream(stream) {
+            const htAudio = document.getElementById('htAudio');
+            htAudio.srcObject = stream;
+            htAudio.muted = false;
+            htAudio.volume = 1.0;
+            const playPromise = htAudio.play();
+            if(playPromise) playPromise.catch(err => console.error("HT play error:", err));
+        }
+
         peer.on('open', (id) => {
             myPeerId = id;
             const userRef = push(dbRefs.online);
@@ -327,30 +375,34 @@
             });
 
             peer.on('call', (call) => {
-                call.answer(); // Terima panggilan masuk secara otomatis
+                call.answer();
                 document.getElementById('incomingTransmission').classList.remove('hidden');
-                
+
                 call.on('stream', (remStream) => {
-                    // Mencegah audio browser diblokir dengan menempelkannya langsung ke tag <audio> di DOM
-                    const htAudio = document.getElementById('htAudio');
-                    htAudio.srcObject = remStream;
-                    htAudio.muted = true;
-                    htAudio.play().then(() => {
-                        htAudio.muted = false;
-                    }).catch(() => {
-                        htAudio.muted = false;
-                        htAudio.play().catch(err => console.error("HT Audio error:", err));
-                    });
+                    if(htAudioUnlocked) {
+                        // Audio sudah di-unlock user, langsung putar
+                        playHtStream(remStream);
+                    } else {
+                        // Simpan stream, tunggu user klik unlock
+                        pendingStream = remStream;
+                        // Goyangkan banner agar user sadar ada transmisi masuk
+                        const banner = document.getElementById('audioUnlockBanner');
+                        if(banner) banner.classList.add('animate-bounce');
+                    }
                 });
-                
+
                 call.on('close', () => {
                     document.getElementById('incomingTransmission').classList.add('hidden');
-                    document.getElementById('htAudio').srcObject = null;
+                    const htAudio = document.getElementById('htAudio');
+                    htAudio.srcObject = null;
+                    pendingStream = null;
                 });
             });
 
             const pttBtn = document.getElementById('pttButton');
             const startMic = async () => {
+                // Unlock audio otomatis saat user tekan PTT (ini juga gesture valid)
+                if(!htAudioUnlocked) window.unlockHtAudio();
                 try {
                     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     pttBtn.classList.add('ptt-active');

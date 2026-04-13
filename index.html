@@ -74,9 +74,6 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto">
-        
-        <audio id="htAudio" autoplay></audio>
-
         <div class="md:hidden bg-white p-4 border-b flex justify-between items-center sticky top-0 z-30">
             <button onclick="toggleSidebar()" class="p-2 text-slate-600"><i class="fa-solid fa-bars-staggered text-2xl"></i></button>
             <div class="text-center">
@@ -281,6 +278,7 @@
 
         const audioSirene = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         let myPeerId = "", activeCalls = [], localStream = null;
+        let incomingAudioElement = null; // Menyimpan elemen audio dinamis HT
         const peer = new Peer();
 
         // --- CORE NAVIGATION ---
@@ -304,7 +302,7 @@
             document.getElementById('txtTgl').innerText = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         }, 1000);
 
-        // --- INTERCOM HT LOGIC (AUDIO FIX) ---
+        // --- INTERCOM HT LOGIC (AUDIO FIXED) ---
         peer.on('open', (id) => {
             myPeerId = id;
             const userRef = push(dbRefs.online);
@@ -327,43 +325,66 @@
             });
 
             peer.on('call', (call) => {
-                call.answer(); // Terima panggilan masuk secara otomatis
+                call.answer(); // Otomatis terima
                 document.getElementById('incomingTransmission').classList.remove('hidden');
                 
                 call.on('stream', (remStream) => {
-                    // Mencegah audio browser diblokir dengan menempelkannya langsung ke tag <audio> di DOM
-                    const htAudio = document.getElementById('htAudio');
-                    htAudio.srcObject = remStream;
-                    htAudio.play().catch(e => console.error("Auto-play error:", e));
+                    // Buat elemen audio dinamis agar suara tidak terpotong atau diblokir
+                    if(incomingAudioElement) {
+                        incomingAudioElement.remove();
+                    }
+                    incomingAudioElement = document.createElement('audio');
+                    incomingAudioElement.srcObject = remStream;
+                    incomingAudioElement.autoplay = true;
+                    document.body.appendChild(incomingAudioElement);
+
+                    // Memaksa audio untuk play dan menangani error jika diblokir
+                    incomingAudioElement.play().catch(error => {
+                        console.error("Audio autoplay diblokir browser:", error);
+                        Swal.fire('Izin Suara', 'Browser memblokir suara HT. Klik OK agar suara terdengar.', 'info')
+                        .then(() => incomingAudioElement.play());
+                    });
                 });
                 
                 call.on('close', () => {
                     document.getElementById('incomingTransmission').classList.add('hidden');
-                    document.getElementById('htAudio').srcObject = null;
+                    if(incomingAudioElement) {
+                        incomingAudioElement.remove();
+                        incomingAudioElement = null;
+                    }
                 });
             });
 
             const pttBtn = document.getElementById('pttButton');
             const startMic = async () => {
                 try {
+                    // Mengambil akses mikrofon pengguna
                     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     pttBtn.classList.add('ptt-active');
                     document.getElementById('pttCircle').classList.add('transmitting-glow');
+                    
                     const snap = await get(dbRefs.online);
                     if(snap.exists()){
                         Object.values(snap.val()).forEach(u => {
                             if(u.peerId !== myPeerId) activeCalls.push(peer.call(u.peerId, localStream));
                         });
                     }
-                } catch (e) { console.error("Mic error:", e); }
+                } catch (e) { 
+                    console.error("Mic error:", e);
+                    Swal.fire('Akses Mic Gagal', 'Pastikan izin microphone diberikan pada browser.', 'error');
+                }
             };
+
             const stopMic = () => {
                 pttBtn.classList.remove('ptt-active');
                 document.getElementById('pttCircle').classList.remove('transmitting-glow');
                 if(localStream) localStream.getTracks().forEach(t => t.stop());
-                activeCalls.forEach(c => c.close()); activeCalls = [];
+                activeCalls.forEach(c => c.close()); 
+                activeCalls = [];
             };
-            pttBtn.onmousedown = startMic; pttBtn.onmouseup = stopMic;
+
+            pttBtn.onmousedown = startMic; 
+            pttBtn.onmouseup = stopMic;
             pttBtn.ontouchstart = (e) => { e.preventDefault(); startMic(); };
             pttBtn.ontouchend = (e) => { e.preventDefault(); stopMic(); };
         }

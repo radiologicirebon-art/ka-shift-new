@@ -297,7 +297,32 @@
             online: ref(db, 'online_users')
         };
 
+        // Sirene diinisialisasi tapi TIDAK di-autoplay
+        // Akan di-unlock bersamaan dengan tombol unlock audio HT
         const audioSirene = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audioSirene.load(); // preload tanpa play
+        let audioGlobalUnlocked = false; // flag: apakah user sudah pernah berinteraksi
+
+        // Fungsi safe play sirene — hanya putar jika sudah ada izin user
+        function playSirene() {
+            if (audioGlobalUnlocked) {
+                audioSirene.currentTime = 0;
+                audioSirene.play().catch(() => {});
+            }
+        }
+
+        // Unlock semua audio saat user pertama kali klik/tap di halaman mana saja
+        function globalAudioUnlock() {
+            if (audioGlobalUnlocked) return;
+            audioGlobalUnlocked = true;
+            // Prime sirene dengan play+pause supaya browser tidak blokir nanti
+            audioSirene.play().then(() => { audioSirene.pause(); audioSirene.currentTime = 0; }).catch(() => {});
+            document.removeEventListener('click', globalAudioUnlock);
+            document.removeEventListener('touchstart', globalAudioUnlock);
+        }
+        document.addEventListener('click', globalAudioUnlock);
+        document.addEventListener('touchstart', globalAudioUnlock);
+
         let myPeerId = "", activeCalls = [], localStream = null;
         const peer = new Peer();
 
@@ -336,6 +361,7 @@
         let pendingStream = null;
 
         window.unlockHtAudio = () => {
+            // Unlock AudioContext untuk HT
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -344,6 +370,10 @@
             htAudio.volume = 1.0;
 
             htAudioUnlocked = true;
+
+            // Sekaligus unlock sirene global
+            globalAudioUnlock();
+
             const banner = document.getElementById('audioUnlockBanner');
             banner.innerHTML = '<i class="fa-solid fa-volume-high text-emerald-500 text-xl mr-3"></i><span class="text-xs font-black text-emerald-700">Audio HT Aktif — Siap Menerima Suara</span>';
             banner.className = 'mb-4 bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 flex items-center';
@@ -433,14 +463,16 @@
         // PASIEN BARU & SIRENE
         // =============================================
         document.getElementById('btnBellTrigger').onclick = () => {
-            audioSirene.play();
+            playSirene(); // aman karena dipanggil dari klik user
             set(dbRefs.bel, { waktu: serverTimestamp(), id: Math.random(), tipe: 'PASIEN_BARU' });
         };
 
+        let belInitialLoad = true; // abaikan data lama saat pertama load
         onValue(dbRefs.bel, (snap) => {
+            if (belInitialLoad) { belInitialLoad = false; return; } // skip trigger pertama
             if (snap.exists()) {
                 const card = document.getElementById('statusBelCard'), txt = document.getElementById('txtStatusBel');
-                audioSirene.play();
+                playSirene(); // gunakan fungsi aman, tidak akan diblokir browser
                 card.classList.replace('border-slate-200', 'border-emerald-500');
                 txt.innerText = "ADA PASIEN!";
                 txt.classList.replace('text-slate-400', 'text-emerald-600');

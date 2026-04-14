@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aps-Radiology Kepala Shift | RS Mitra Plumbon</title>
+    <title>Pro-Radiology Mobile | RS Mitra Plumbon</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,7 +42,7 @@
         <div class="p-6 border-b bg-slate-900 flex justify-between items-center">
             <div>
                 <h1 class="text-white font-bold text-xl tracking-tight"><i class="fa-solid fa-microscope text-sky-400 mr-2"></i>DHASBOARD RADIOLOGI</h1>
-                <p class="text-sky-300 text-[10px] uppercase tracking-widest mt-1">develop by ino 2026  </p>
+                <p class="text-sky-300 text-[10px] uppercase tracking-widest mt-1">develop by ino 2026</p>
             </div>
             <button class="md:hidden text-white" onclick="toggleSidebar()"><i class="fa-solid fa-xmark text-2xl"></i></button>
         </div>
@@ -68,6 +68,10 @@
             <div class="my-2 border-t border-slate-200"></div>
             <button onclick="openIndikatorMutu()" class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-600 hover:to-blue-700 shadow-md">
                 <i class="fa-solid fa-chart-pie w-6"></i> <span class="ml-3 font-semibold">Input Indikator Mutu</span>
+                <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
+            </button>
+            <button onclick="openAuditMutu()" class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-md">
+                <i class="fa-solid fa-magnifying-glass-chart w-6"></i> <span class="ml-3 font-semibold">Audit Mutu Radiologi</span>
                 <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
             </button>
         </nav>
@@ -393,6 +397,9 @@
     <script>
         function openIndikatorMutu() {
             window.open('https://radiologicirebon-art.github.io/indikator-mutu-rad-2026/', '_blank');
+        }
+        function openAuditMutu() {
+            window.open('https://radiologicirebon-art.github.io/mutu-rad-2026/', '_blank');
         }
     </script>
 

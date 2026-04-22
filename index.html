@@ -613,28 +613,34 @@
 
         // Fungsi safe play sirene — hanya putar jika sudah ada izin user
         function playSirene() {
-            if (audioGlobalUnlocked) {
-                audioSirene.currentTime = 0;
-                audioSirene.play().catch(() => { });
-            }
+            if (!audioGlobalUnlocked) return;
+            // Reset dan play
+            audioSirene.pause();
+            audioSirene.currentTime = 0;
+            const p = audioSirene.play();
+            if (p) p.catch(err => {
+                // Coba buat Audio baru jika gagal (fallback)
+                console.warn('Sirene play gagal, retry...', err);
+            });
         }
 
-        // Unlock semua audio saat user pertama kali klik/tap di halaman mana saja
+        // Unlock audio - HANYA dipanggil saat ada gesture user nyata
         function globalAudioUnlock() {
             if (audioGlobalUnlocked) return;
             audioGlobalUnlocked = true;
-            const _ctx = new (window.AudioContext || window.webkitAudioContext)();
-            _ctx.resume().then(() => {
-                audioSirene.play().then(() => {
+            // Prime sirene: langsung play/pause dari dalam gesture handler
+            const playPromise = audioSirene.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
                     audioSirene.pause();
                     audioSirene.currentTime = 0;
                 }).catch(() => {});
-            }).catch(() => {});
+            }
             document.removeEventListener('click', globalAudioUnlock);
             document.removeEventListener('touchstart', globalAudioUnlock);
         }
-        document.addEventListener('click', globalAudioUnlock);
-        document.addEventListener('touchstart', globalAudioUnlock);
+        document.addEventListener('click', globalAudioUnlock, { once: true });
+        document.addEventListener('touchstart', globalAudioUnlock, { once: true });
 
         let myPeerId = "", activeCalls = [], localStream = null;
         const peer = new Peer();
@@ -674,8 +680,10 @@
         let pendingStream = null;
 
         window.unlockHtAudio = () => {
-            // Unlock AudioContext untuk HT
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Unlock AudioContext untuk HT - dibuat SAAT user klik (gesture)
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             const htAudio = document.getElementById('htAudio');
@@ -684,7 +692,7 @@
 
             htAudioUnlocked = true;
 
-            // Sekaligus unlock sirene global
+            // Sekaligus unlock sirene global (sudah dalam gesture context)
             globalAudioUnlock();
 
             const banner = document.getElementById('audioUnlockBanner');

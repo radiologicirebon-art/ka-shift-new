@@ -146,6 +146,11 @@
                 class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all hover:bg-slate-100">
                 <i class="fa-solid fa-database w-6"></i> <span class="ml-3 font-semibold">Rekap Laporan</span>
             </button>
+            <button onclick="openLaporanHarian()"
+                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-[#1c9697] to-[#0a7a7b] text-white hover:from-[#15797a] hover:to-[#065c5d] shadow-md">
+                <i class="fa-solid fa-file-pen w-6"></i> <span class="ml-3 font-semibold">Input Laporan Harian</span>
+                <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
+            </button>
             <div class="my-2 border-t border-slate-200"></div>
             <button onclick="openIndikatorMutu()"
                 class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r bg-[#1c9697] text-white shadow-md">
@@ -550,6 +555,16 @@
                         <tbody id="rekapBody" class="divide-y"></tbody>
                     </table>
                 </div>
+                <!-- Tombol Input Laporan Harian -->
+                <div class="p-6 border-t bg-slate-50">
+                    <button onclick="openLaporanHarian()"
+                        class="w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-sm uppercase tracking-wider text-white shadow-lg transition-all active:scale-95"
+                        style="background: linear-gradient(135deg, #1c9697 0%, #0a7a7b 100%);">
+                        <i class="fa-solid fa-file-pen text-xl"></i>
+                        Input Laporan Harian
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-75"></i>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -566,6 +581,9 @@
         }
         function openMonitoringSuhu() {
             window.open('https://radiologicirebon-art.github.io/monitoring-suhu-radiologi/', '_blank');
+        }
+        function openLaporanHarian() {
+            window.open('https://radiologicirebon-art.github.io/laporan-harian-rad/', '_blank');
         }
     </script>
 

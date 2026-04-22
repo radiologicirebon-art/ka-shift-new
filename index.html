@@ -18,7 +18,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9;
+            background-color: #ffffff;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -52,9 +52,9 @@
         }
 
         .sidebar-btn.active {
-            background-color: #0f172a;
+            background-color: #0a0a0a;
             color: white;
-            border-right: 4px solid #38bdf8;
+            border-right: 4px solid #f78721;
         }
 
         .tab-content {
@@ -112,11 +112,11 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar" class="w-72 bg-white border-r flex flex-col shadow-2xl">
-        <div class="p-6 border-b bg-slate-900 flex justify-between items-center">
+        <div class="p-6 border-b bg-[#0a0a0a] flex justify-between items-center">
             <div>
                 <h1 class="text-white font-bold text-xl tracking-tight"><i
-                        class="fa-solid fa-microscope text-sky-400 mr-2"></i>DHASBOARD RADIOLOGI</h1>
-                <p class="text-sky-300 text-[10px] uppercase tracking-widest mt-1">develop by ino 2026</p>
+                        class="fa-solid fa-microscope text-[#f78721] mr-2"></i>DHASBOARD RADIOLOGI</h1>
+                <p class="text-[#1c9697] text-[10px] uppercase tracking-widest mt-1">develop by ino 2026</p>
             </div>
             <button class="md:hidden text-white" onclick="toggleSidebar()"><i
                     class="fa-solid fa-xmark text-2xl"></i></button>
@@ -148,23 +148,23 @@
             </button>
             <div class="my-2 border-t border-slate-200"></div>
             <button onclick="openIndikatorMutu()"
-                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-600 hover:to-blue-700 shadow-md">
+                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r bg-[#1c9697] text-white shadow-md">
                 <i class="fa-solid fa-chart-pie w-6"></i> <span class="ml-3 font-semibold">Input Indikator Mutu</span>
                 <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
             </button>
             <button onclick="openAuditMutu()"
-                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-md">
+                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-[#1c9697] text-white shadow-md">
                 <i class="fa-solid fa-magnifying-glass-chart w-6"></i> <span class="ml-3 font-semibold">Audit Mutu
                     Radiologi</span>
                 <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
             </button>
             <button onclick="openMonitoringSuhu()"
-                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-md">
+                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-[#1c9697] to-[#0a7a7b] text-white hover:from-[#15797a] hover:to-[#065c5d] shadow-md">
                 <i class="fa-solid fa-temperature-half w-6"></i> <span class="ml-3 font-semibold">Monitoring Suhu &amp; Kelembaban</span>
                 <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
             </button>
             <button onclick="window.open('https://radiologicirebon-art.github.io/Inventaris-rad/', '_blank')"
-                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 shadow-md">
+                class="sidebar-btn w-full flex items-center p-4 rounded-xl transition-all bg-gradient-to-r from-[#f78721] to-[#d96f18] text-white hover:from-[#d96f18] hover:to-[#b85c12] shadow-md">
                 <i class="fa-solid fa-boxes-stacked w-6"></i> <span class="ml-3 font-semibold">Data Inventaris Radiologi</span>
                 <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-xs opacity-75"></i>
             </button>
@@ -186,7 +186,7 @@
                     class="fa-solid fa-bars-staggered text-2xl"></i></button>
             <div class="text-center">
                 <span class="block font-bold text-slate-800 text-sm">INSTALASI RADIOLOGI</span>
-                <span class="block text-[8px] text-sky-600 font-bold uppercase tracking-widest">Mobile Apps</span>
+                <span class="block text-[8px] text-[#1c9697] font-bold uppercase tracking-widest">Mobile Apps</span>
             </div>
             <div class="w-10"></div>
         </div>
@@ -199,12 +199,12 @@
                     <p class="text-slate-500 text-sm">RS Mitra Plumbon Integrated System</p>
                 </div>
                 <button id="btnBellTrigger"
-                    class="w-full md:w-auto bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-lg hover:bg-emerald-700 transition flex items-center justify-center gap-3 font-bold">
+                    class="w-full md:w-auto bg-[#1c9697] text-white px-6 py-4 rounded-2xl shadow-lg hover:bg-[#15797a] transition flex items-center justify-center gap-3 font-bold">
                     <i class="fa-solid fa-user-plus text-xl"></i> INFORMASI PASIEN BARU
                 </button>
             </header>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-sky-500">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-[#1c9697]">
                     <p class="text-[10px] font-bold text-slate-400 uppercase">Suhu Ruang CT</p>
                     <h3 class="text-3xl font-black text-slate-800" id="dashSuhu">--.-<span
                             class="text-base text-slate-300">°C</span></h3>
@@ -213,18 +213,18 @@
                     <p class="text-[10px] font-bold text-slate-400 uppercase">Status Antrean</p>
                     <h3 id="txtStatusBel" class="text-lg font-black text-slate-400 uppercase">Normal</h3>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
-                    <p class="text-[10px] font-bold text-emerald-500 uppercase">Operan Terakhir</p>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-[#1c9697]">
+                    <p class="text-[10px] font-bold text-[#1c9697] uppercase">Operan Terakhir</p>
                     <div id="previewOperanContent" class="text-[11px] mt-1 font-medium truncate">Memuat...</div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-amber-500">
-                    <p class="text-[10px] font-bold text-amber-500 uppercase">Status Mutu</p>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-[#f78721]">
+                    <p class="text-[10px] font-bold text-[#f78721] uppercase">Status Mutu</p>
                     <div id="previewPmiContent" class="text-[11px] mt-1 font-medium truncate">Memuat...</div>
                 </div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border">
                 <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i
-                        class="fa-solid fa-clock-rotate-left text-sky-500"></i> Pengingat Jadwal Pasien</h4>
+                        class="fa-solid fa-clock-rotate-left text-[#1c9697]"></i> Pengingat Jadwal Pasien</h4>
                 <div id="dashJadwalList" class="space-y-3"></div>
             </div>
         </section>
@@ -234,15 +234,15 @@
             <div class="max-w-md mx-auto">
                 <!-- Banner Unlock Audio -->
                 <div id="audioUnlockBanner"
-                    class="mb-4 bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex items-center gap-4">
-                    <i class="fa-solid fa-volume-xmark text-amber-500 text-2xl flex-shrink-0"></i>
+                    class="mb-4 bg-[#fff8f0] border-2 border-[#f78721] rounded-2xl p-4 flex items-center gap-4">
+                    <i class="fa-solid fa-volume-xmark text-[#f78721] text-2xl flex-shrink-0"></i>
                     <div class="flex-1">
-                        <p class="text-xs font-black text-amber-700 uppercase">Audio Browser Terkunci</p>
-                        <p class="text-[10px] text-amber-600 mt-0.5">Klik tombol ini sekali untuk mengaktifkan suara HT
+                        <p class="text-xs font-black text-[#c4650f] uppercase">Audio Browser Terkunci</p>
+                        <p class="text-[10px] text-[#f78721] mt-0.5">Klik tombol ini sekali untuk mengaktifkan suara HT
                         </p>
                     </div>
                     <button onclick="unlockHtAudio()"
-                        class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-wide flex-shrink-0">
+                        class="bg-[#f78721] hover:bg-[#f78721] text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-wide flex-shrink-0">
                         Aktifkan
                     </button>
                 </div>
@@ -252,7 +252,7 @@
                     <div id="pttCircle"
                         class="w-56 h-56 bg-slate-50 rounded-full mx-auto flex items-center justify-center border-[12px] border-white shadow-inner transition-all select-none cursor-pointer mb-8">
                         <div id="pttButton"
-                            class="w-44 h-44 bg-sky-600 rounded-full flex flex-col items-center justify-center text-white shadow-2xl active:bg-red-600 transition-all">
+                            class="w-44 h-44 bg-[#1c9697] rounded-full flex flex-col items-center justify-center text-white shadow-2xl active:bg-red-600 transition-all">
                             <i class="fa-solid fa-microphone text-5xl mb-3"></i>
                             <span class="font-black text-xs uppercase tracking-widest">Tekan & Tahan</span>
                         </div>
@@ -261,7 +261,7 @@
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-[10px] font-bold text-slate-400 uppercase">Petugas Aktif</span>
                             <span id="onlineCount"
-                                class="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                                class="bg-[#1c9697] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                         </div>
                         <div id="onlineUsersList" class="grid grid-cols-2 gap-2"></div>
                     </div>
@@ -274,11 +274,11 @@
 
                 <!-- REALTIME CHAT -->
                 <div class="mt-6 bg-white rounded-[2rem] shadow-xl border overflow-hidden">
-                    <div class="bg-slate-800 px-5 py-3 flex items-center gap-2">
-                        <i class="fa-solid fa-comments text-sky-400"></i>
+                    <div class="bg-[#0a0a0a] px-5 py-3 flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-[#f78721]"></i>
                         <span class="text-white font-black text-sm uppercase tracking-wide">Pesan Realtime</span>
                         <span id="chatOnlineBadge"
-                            class="ml-auto bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">0
+                            class="ml-auto bg-[#1c9697] text-white text-[9px] px-2 py-0.5 rounded-full font-bold">0
                             Online</span>
                     </div>
                     <div id="chatMessages" class="h-52 overflow-y-auto p-4 space-y-2 bg-slate-50 text-xs"></div>
@@ -289,7 +289,7 @@
                             class="flex-1 p-2 border rounded-xl text-[10px] outline-none"
                             onkeydown="if(event.key==='Enter') window.sendChatMsg()">
                         <button onclick="window.sendChatMsg()"
-                            class="bg-sky-600 text-white px-4 py-2 rounded-xl text-[10px] font-black flex-shrink-0">Kirim</button>
+                            class="bg-[#1c9697] text-white px-4 py-2 rounded-xl text-[10px] font-black flex-shrink-0">Kirim</button>
                     </div>
                 </div>
             </div>
@@ -307,7 +307,7 @@
                         <p class="text-[10px] text-slate-500 font-semibold">Unit Radiologi — RS Mitra Plumbon</p>
                     </div>
                 </div>
-                <div class="bg-slate-900 p-5 text-white text-center">
+                <div class="bg-[#0a0a0a] p-5 text-white text-center">
                     <h2 class="text-lg font-bold uppercase tracking-widest">Form Operan Dinas Radiologi</h2>
                 </div>
                 <div class="p-5 md:p-8 space-y-6">
@@ -332,7 +332,7 @@
                     <!-- Checklist Kepala Shift -->
                     <div>
                         <p
-                            class="font-black text-xs uppercase mb-3 text-sky-700 bg-sky-50 p-2 rounded-lg border border-sky-100">
+                            class="font-black text-xs uppercase mb-3 text-[#1c9697] bg-[#e8f7f7] p-2 rounded-lg border border-[#b3e0e0]">
                             Ceklis Jobdesk Kepala Shift</p>
                         <div id="checklistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
                     </div>
@@ -372,7 +372,7 @@
                     </div>
 
                     <button id="btnSimpanOperan"
-                        class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase tracking-wider">Simpan
+                        class="w-full py-5 bg-[#1c9697] text-white rounded-2xl font-black uppercase tracking-wider">Simpan
                         &amp; Kirim Laporan</button>
                 </div>
             </div>
@@ -386,12 +386,12 @@
                     <img src="data:image/jpeg;base64,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"
                         alt="Logo RS Mitra Plumbon" style="height:54px;object-fit:contain;">
                     <div class="text-right">
-                        <p class="font-black text-amber-700 text-sm uppercase tracking-wider">Monitoring Mutu Alat</p>
+                        <p class="font-black text-[#c4650f] text-sm uppercase tracking-wider">Monitoring Mutu Alat</p>
                         <p class="text-[10px] text-slate-500 font-semibold">Program Manajemen Insiden (PMI) — Unit
                             Radiologi</p>
                     </div>
                 </div>
-                <div class="p-6 bg-amber-600 text-white font-black text-center uppercase tracking-widest text-sm">
+                <div class="p-6 bg-[#f78721] text-white font-black text-center uppercase tracking-widest text-sm">
                     Ceklist Monitoring Mutu (PMI)</div>
                 <div class="p-5 md:p-8 space-y-6">
                     <!-- Info Alat & Tanggal -->
@@ -451,9 +451,9 @@
                             class="text-center font-black text-lg text-slate-400 bg-white rounded-xl p-3 border-2 border-dashed border-slate-200 mb-4">
                             -- Menunggu Penilaian --</div>
                         <div class="flex gap-6 justify-center">
-                            <label class="flex items-center font-bold text-emerald-600 gap-2 cursor-pointer">
+                            <label class="flex items-center font-bold text-[#1c9697] gap-2 cursor-pointer">
                                 <input type="radio" name="pmiKesimpulan" value="ALAT LAYAK OPERASIONAL"
-                                    class="accent-emerald-600 w-4 h-4" checked> ALAT LAYAK OPERASIONAL
+                                    class="accent-[#1c9697] w-4 h-4" checked> ALAT LAYAK OPERASIONAL
                             </label>
                             <label class="flex items-center font-bold text-red-600 gap-2 cursor-pointer">
                                 <input type="radio" name="pmiKesimpulan" value="ALAT TIDAK LAYAK OPERASIONAL"
@@ -486,7 +486,7 @@
                     </div>
 
                     <button id="btnSimpanPMI"
-                        class="w-full py-5 bg-amber-600 text-white rounded-2xl font-black uppercase tracking-wider">Submit
+                        class="w-full py-5 bg-[#f78721] text-white rounded-2xl font-black uppercase tracking-wider">Submit
                         Data Mutu &amp; Arsip PDF</button>
                 </div>
             </div>
@@ -506,7 +506,7 @@
                             class="p-3 bg-slate-50 border rounded-xl text-xs">
                     </div>
                     <button id="btnSimpanJadwal"
-                        class="w-full mt-4 py-4 bg-emerald-600 text-white rounded-xl font-black text-sm uppercase">Tambah
+                        class="w-full mt-4 py-4 bg-[#1c9697] text-white rounded-xl font-black text-sm uppercase">Tambah
                         Antrean</button>
                 </div>
                 <div class="bg-white rounded-3xl shadow-xl border overflow-hidden">
@@ -530,18 +530,18 @@
         <!-- ===== REKAP LAPORAN ===== -->
         <section id="rekap" class="tab-content p-4 md:p-8">
             <div class="bg-white rounded-3xl shadow-2xl border overflow-hidden">
-                <div class="p-6 bg-slate-900 text-white">
+                <div class="p-6 bg-[#0a0a0a] text-white">
                     <h2 class="text-xl font-bold mb-4">Arsip Digital Laporan</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <select id="filterJenis"
-                            class="bg-slate-800 p-3 rounded-xl text-xs border-none outline-none text-white">
+                            class="bg-[#0a0a0a] p-3 rounded-xl text-xs border-none outline-none text-white">
                             <option value="operan">Laporan Operan</option>
                             <option value="mutu">Laporan PMI</option>
                         </select>
                         <input type="month" id="filterBulan"
-                            class="bg-slate-800 p-3 rounded-xl text-xs border-none outline-none text-white">
+                            class="bg-[#0a0a0a] p-3 rounded-xl text-xs border-none outline-none text-white">
                         <button id="btnTampilkanRekap"
-                            class="bg-sky-500 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-white">Tampilkan</button>
+                            class="bg-[#1c9697] py-3 rounded-xl text-xs font-black uppercase tracking-widest text-white">Tampilkan</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -665,8 +665,8 @@
             globalAudioUnlock();
 
             const banner = document.getElementById('audioUnlockBanner');
-            banner.innerHTML = '<i class="fa-solid fa-volume-high text-emerald-500 text-xl mr-3"></i><span class="text-xs font-black text-emerald-700">Audio HT Aktif — Siap Menerima Suara</span>';
-            banner.className = 'mb-4 bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 flex items-center';
+            banner.innerHTML = '<i class="fa-solid fa-volume-high text-[#1c9697] text-xl mr-3"></i><span class="text-xs font-black text-emerald-700">Audio HT Aktif — Siap Menerima Suara</span>';
+            banner.className = 'mb-4 bg-[#e8f7f7] border-2 border-[#1c9697] rounded-2xl p-4 flex items-center';
 
             if (pendingStream) { playHtStream(pendingStream); pendingStream = null; }
         };
@@ -705,10 +705,10 @@
                         const time = msg.time ? new Date(msg.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
                         box.innerHTML += `
                             <div class="flex ${isSelf ? 'justify-end' : 'justify-start'}">
-                                <div class="max-w-[80%] ${isSelf ? 'bg-sky-600 text-white rounded-2xl rounded-tr-sm' : 'bg-white border text-slate-800 rounded-2xl rounded-tl-sm'} px-3 py-2 shadow-sm">
-                                    <p class="text-[9px] font-black ${isSelf ? 'text-sky-200' : 'text-sky-600'} mb-0.5">${msg.nama || 'Anonim'}</p>
+                                <div class="max-w-[80%] ${isSelf ? 'bg-[#1c9697] text-white rounded-2xl rounded-tr-sm' : 'bg-white border text-slate-800 rounded-2xl rounded-tl-sm'} px-3 py-2 shadow-sm">
+                                    <p class="text-[9px] font-black ${isSelf ? 'text-sky-200' : 'text-[#1c9697]'} mb-0.5">${msg.nama || 'Anonim'}</p>
                                     <p class="text-[11px] leading-snug">${msg.teks}</p>
-                                    <p class="text-[8px] ${isSelf ? 'text-sky-300' : 'text-slate-400'} text-right mt-0.5">${time}</p>
+                                    <p class="text-[8px] ${isSelf ? 'text-[#1c9697]' : 'text-slate-400'} text-right mt-0.5">${time}</p>
                                 </div>
                             </div>`;
                     });
@@ -812,9 +812,9 @@
             if (snap.exists()) {
                 const card = document.getElementById('statusBelCard'), txt = document.getElementById('txtStatusBel');
                 playSirene(); // gunakan fungsi aman, tidak akan diblokir browser
-                card.classList.replace('border-slate-200', 'border-emerald-500');
+                card.classList.replace('border-slate-200', 'border-[#1c9697]');
                 txt.innerText = "ADA PASIEN!";
-                txt.classList.replace('text-slate-400', 'text-emerald-600');
+                txt.classList.replace('text-slate-400', 'text-[#1c9697]');
                 if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
 
                 Swal.fire({
@@ -825,9 +825,9 @@
                     confirmButtonColor: '#059669'
                 }).then(() => {
                     audioSirene.pause(); audioSirene.currentTime = 0;
-                    card.classList.replace('border-emerald-500', 'border-slate-200');
+                    card.classList.replace('border-[#1c9697]', 'border-slate-200');
                     txt.innerText = "NORMAL";
-                    txt.classList.replace('text-emerald-600', 'text-slate-400');
+                    txt.classList.replace('text-[#1c9697]', 'text-slate-400');
                 });
             }
         });
@@ -874,7 +874,7 @@
         ];
         tasks.forEach(t => {
             document.getElementById('checklistContainer').innerHTML +=
-                `<label class="flex items-start gap-3 p-3 bg-slate-50 border rounded-xl text-[11px] font-semibold cursor-pointer hover:bg-sky-50 transition">
+                `<label class="flex items-start gap-3 p-3 bg-slate-50 border rounded-xl text-[11px] font-semibold cursor-pointer hover:bg-[#e8f7f7] transition">
                     <input type="checkbox" class="op-check mt-0.5 accent-sky-600 w-4 h-4 flex-shrink-0" data-task="${t}">
                     <span>${t}</span>
                 </label>`;
@@ -899,7 +899,7 @@
                 `<tr class="hover:bg-slate-50">
                     <td class="p-3 border-b text-slate-400 font-bold">${i + 1}</td>
                     <td class="p-3 border-b font-semibold">${p}</td>
-                    <td class="p-3 border-b text-center"><input type="radio" name="pmiA_${i}" value="baik" class="pmi-radio accent-emerald-600 w-4 h-4" data-param="${p}" data-group="A"></td>
+                    <td class="p-3 border-b text-center"><input type="radio" name="pmiA_${i}" value="baik" class="pmi-radio accent-[#1c9697] w-4 h-4" data-param="${p}" data-group="A"></td>
                     <td class="p-3 border-b text-center"><input type="radio" name="pmiA_${i}" value="tidak" class="pmi-radio-no accent-red-600 w-4 h-4" data-param="${p}" data-group="A"></td>
                 </tr>`;
         });
@@ -916,7 +916,7 @@
                 `<tr class="hover:bg-slate-50">
                     <td class="p-3 border-b text-slate-400 font-bold">${i + 1}</td>
                     <td class="p-3 border-b font-semibold">${p}</td>
-                    <td class="p-3 border-b text-center"><input type="radio" name="pmiB_${i}" value="baik" class="pmi-radio accent-emerald-600 w-4 h-4" data-param="${p}" data-group="B"></td>
+                    <td class="p-3 border-b text-center"><input type="radio" name="pmiB_${i}" value="baik" class="pmi-radio accent-[#1c9697] w-4 h-4" data-param="${p}" data-group="B"></td>
                     <td class="p-3 border-b text-center"><input type="radio" name="pmiB_${i}" value="tidak" class="pmi-radio-no accent-red-600 w-4 h-4" data-param="${p}" data-group="B"></td>
                 </tr>`;
         });
@@ -928,7 +928,7 @@
                 const val = r.value;
                 if (val === 'ALAT LAYAK OPERASIONAL') {
                     box.textContent = '✅ ' + val;
-                    box.className = 'text-center font-black text-base text-emerald-700 bg-emerald-50 rounded-xl p-3 border-2 border-emerald-300 mb-4';
+                    box.className = 'text-center font-black text-base text-[#1c9697] bg-[#e8f7f7] rounded-xl p-3 border-2 border-[#1c9697] mb-4';
                 } else {
                     box.textContent = '❌ ' + val;
                     box.className = 'text-center font-black text-base text-red-700 bg-red-50 rounded-xl p-3 border-2 border-red-300 mb-4';
@@ -1032,7 +1032,7 @@
                             </button>
                         </td>
                     </tr>`;
-                    dash.innerHTML += `<div class="p-3 bg-slate-50 border-l-4 border-emerald-500 rounded text-[10px] font-bold flex justify-between shadow-sm">
+                    dash.innerHTML += `<div class="p-3 bg-slate-50 border-l-4 border-[#1c9697] rounded text-[10px] font-bold flex justify-between shadow-sm">
                         <span>${i.jam} | ${i.nama}</span><span class="text-slate-400">${i.periksa}</span>
                     </div>`;
                 });
@@ -1071,7 +1071,7 @@
                             <td class="p-4">${i.tanggal}</td>
                             <td class="p-4 font-bold">${(i.shift || '').split(' ')[0]}</td>
                             <td class="p-4">${i.kepala_shift || '-'}</td>
-                            <td class="p-4"><button onclick="window._callViewPDF('operan',${idx})" class="bg-sky-500 text-white px-3 py-1 rounded text-[9px] font-bold">PDF</button></td>
+                            <td class="p-4"><button onclick="window._callViewPDF('operan',${idx})" class="bg-[#1c9697] text-white px-3 py-1 rounded text-[9px] font-bold">PDF</button></td>
                         </tr>`;
                     });
                 } else {
@@ -1080,8 +1080,8 @@
                         html += `<tr>
                             <td class="p-4">${i.tanggal}</td>
                             <td class="p-4">${i.alat || '-'}</td>
-                            <td class="p-4 font-bold text-emerald-600">${i.kesimpulan || '-'}</td>
-                            <td class="p-4"><button onclick="window._callViewPDF('mutu',${idx})" class="bg-amber-500 text-white px-3 py-1 rounded text-[9px] font-bold">PDF</button></td>
+                            <td class="p-4 font-bold text-[#1c9697]">${i.kesimpulan || '-'}</td>
+                            <td class="p-4"><button onclick="window._callViewPDF('mutu',${idx})" class="bg-[#f78721] text-white px-3 py-1 rounded text-[9px] font-bold">PDF</button></td>
                         </tr>`;
                     });
                 }

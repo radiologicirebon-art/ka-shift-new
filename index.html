@@ -623,8 +623,13 @@
         function globalAudioUnlock() {
             if (audioGlobalUnlocked) return;
             audioGlobalUnlocked = true;
-            // Prime sirene dengan play+pause supaya browser tidak blokir nanti
-            audioSirene.play().then(() => { audioSirene.pause(); audioSirene.currentTime = 0; }).catch(() => { });
+            const _ctx = new (window.AudioContext || window.webkitAudioContext)();
+            _ctx.resume().then(() => {
+                audioSirene.play().then(() => {
+                    audioSirene.pause();
+                    audioSirene.currentTime = 0;
+                }).catch(() => {});
+            }).catch(() => {});
             document.removeEventListener('click', globalAudioUnlock);
             document.removeEventListener('touchstart', globalAudioUnlock);
         }

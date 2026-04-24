@@ -1474,27 +1474,17 @@
         // REALTIME LISTENER — JADWAL
         // =============================================
         onValue(dbRefs.jadwal, (snap) => {
-            const body = document.getElementById('tableJadwalBody');
-            const dash = document.getElementById('dashJadwalList');
-            body.innerHTML = ""; dash.innerHTML = "";
-            if (snap.exists()) {
-                Object.entries(snap.val()).forEach(([key, i]) => {
-                    body.innerHTML += `<tr>
-                        <td class="p-5 font-bold">${i.jam}</td>
-                        <td class="p-5 font-bold">${i.nama}</td>
-                        <td class="p-5">${i.periksa}</td>
-                        <td class="p-5 text-center">
-                            <button class="text-red-500" onclick="removeData('jadwal_pasien/${key}')">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>`;
-                    dash.innerHTML += `<div class="p-3 bg-slate-50 border-l-4 border-[#1c9697] rounded text-[10px] font-bold flex justify-between shadow-sm">
-                        <span>${i.jam} | ${i.nama}</span><span class="text-slate-400">${i.periksa}</span>
-                    </div>`;
-                });
-            }
+            _allJadwalData = snap.exists() ? snap.val() : {};
+            const filterTgl = document.getElementById('jdFilterTgl').value;
+            renderJadwalTable(_allJadwalData, filterTgl);
+            renderDashJadwal(_allJadwalData);
+            cekPengingatJadwal(_allJadwalData);
+            // Update jadwal di form operan jika tanggal sudah dipilih
+            const opTgl = document.getElementById('opTanggal').value;
+            if (opTgl) updateOpJadwal(opTgl, _allJadwalData);
         });
+        // Cek pengingat jadwal setiap menit
+        setInterval(() => cekPengingatJadwal(_allJadwalData), 60000);
 
         window.removeData = (path) => remove(ref(db, path));
 

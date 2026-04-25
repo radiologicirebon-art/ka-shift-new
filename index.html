@@ -274,6 +274,32 @@
                     <i class="fa-solid fa-plus mr-1"></i> Tambah Jadwal Pasien
                 </button>
             </div>
+
+            <!-- DASHBOARD JADWAL PASIEN MENDATANG -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border mt-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-[#f78721]"></i> Jadwal Pasien Mendatang
+                        <span class="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">7 hari ke depan</span>
+                    </h4>
+                    <span id="dashJadwalMendatangCount" class="bg-[#f78721] text-white text-[10px] font-black px-3 py-1 rounded-full">0 Pasien</span>
+                </div>
+                <div class="overflow-x-auto rounded-xl border">
+                    <table class="w-full text-left text-[10px]">
+                        <thead class="bg-amber-50 border-b">
+                            <tr>
+                                <th class="px-3 py-2 font-black text-amber-700 uppercase">Tanggal</th>
+                                <th class="px-3 py-2 font-black text-amber-700 uppercase">Jam</th>
+                                <th class="px-3 py-2 font-black text-amber-700 uppercase">Jenis Pemeriksaan</th>
+                                <th class="px-3 py-2 font-black text-amber-700 uppercase">Nama Pasien</th>
+                                <th class="px-3 py-2 font-black text-amber-700 uppercase">Sisa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashJadwalMendatangList" class="divide-y"></tbody>
+                    </table>
+                </div>
+                <p id="dashJadwalMendatangEmpty" class="text-center text-slate-400 text-[10px] py-4 hidden">Tidak ada jadwal mendatang dalam 7 hari ke depan</p>
+            </div>
         </section>
 
         <!-- ===== INTERCOM HT ===== -->
@@ -1409,6 +1435,45 @@
             } else {
                 banner.classList.add('hidden');
             }
+        }
+
+        function renderDashJadwalMendatang(dataObj) {
+            const dash = document.getElementById('dashJadwalMendatangList');
+            const empty = document.getElementById('dashJadwalMendatangEmpty');
+            const count = document.getElementById('dashJadwalMendatangCount');
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            // 7 hari ke depan (tidak termasuk hari ini)
+            const maxDate = new Date(today);
+            maxDate.setDate(today.getDate() + 7);
+            const maxStr = maxDate.toISOString().split('T')[0];
+            dash.innerHTML = '';
+            const mendatangEntries = Object.entries(dataObj)
+                .filter(([,i]) => i.tanggal > todayStr && i.tanggal <= maxStr)
+                .sort((a,b) => {
+                    const ta = (a[1].tanggal||'') + (a[1].jam||'');
+                    const tb = (b[1].tanggal||'') + (b[1].jam||'');
+                    return ta.localeCompare(tb);
+                });
+            count.textContent = mendatangEntries.length + ' Pasien';
+            if (mendatangEntries.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            mendatangEntries.forEach(([, i]) => {
+                const tglEntry = new Date(i.tanggal + 'T00:00:00');
+                const diffDays = Math.round((tglEntry - new Date(todayStr + 'T00:00:00')) / (1000*60*60*24));
+                const sisaLabel = diffDays === 1 ? 'Besok' : `${diffDays} hari lagi`;
+                const sisaClass = diffDays === 1 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+                dash.innerHTML += `<tr class="hover:bg-amber-50">
+                    <td class="px-3 py-2 text-slate-600 font-bold">${formatTglIndo(i.tanggal)}</td>
+                    <td class="px-3 py-2 font-black text-[#f78721]">${i.jam || '-'}</td>
+                    <td class="px-3 py-2 font-semibold">${i.periksa || '-'}</td>
+                    <td class="px-3 py-2 font-bold">${i.nama || '-'}</td>
+                    <td class="px-3 py-2"><span class="text-[8px] font-black px-2 py-0.5 rounded-full ${sisaClass}">${sisaLabel}</span></td>
+                </tr>`;
+            });
         }
 
         // Update jadwal di operan ketika tanggal operan berubah

@@ -1320,9 +1320,18 @@
         // =============================================
         document.getElementById('btnSimpanOperan').onclick = () => {
             const tglOperan = document.getElementById('opTanggal').value;
-            // Kumpulkan jadwal pasien untuk tanggal operan
+            // Jadwal hari ini
             const jadwalEntries = tglOperan && _allJadwalData
                 ? Object.values(_allJadwalData).filter(i => i.tanggal === tglOperan).sort((a,b)=>(a.jam||'').localeCompare(b.jam||''))
+                : [];
+            // Jadwal 7 hari ke depan
+            const maxDate = new Date((tglOperan || getTodayStr()) + 'T00:00:00');
+            maxDate.setDate(maxDate.getDate() + 7);
+            const maxStr = maxDate.toISOString().split('T')[0];
+            const jadwalMendatang = tglOperan && _allJadwalData
+                ? Object.values(_allJadwalData)
+                    .filter(i => i.tanggal && i.tanggal > tglOperan && i.tanggal <= maxStr)
+                    .sort((a,b) => ((a.tanggal||'')+(a.jam||'')).localeCompare((b.tanggal||'')+(b.jam||'')))
                 : [];
             const data = {
                 tanggal: tglOperan,
@@ -1332,6 +1341,7 @@
                 checklist: Array.from(document.querySelectorAll('.op-check')).map(c => ({ nama_tugas: c.dataset.task, status: c.checked })),
                 ttd_image: padOperan.isEmpty() ? '' : padOperan.toDataURL(),
                 jadwal_pasien: jadwalEntries,
+                jadwal_mendatang: jadwalMendatang,
                 timestamp: serverTimestamp()
             };
             if (!data.tanggal) return Swal.fire('Error', 'Tanggal wajib diisi', 'error');
@@ -1567,9 +1577,21 @@
         document.getElementById('btnCetakPDFOperan').onclick = () => {
             const tglOperan = document.getElementById('opTanggal').value;
             if (!tglOperan) return Swal.fire('Peringatan', 'Pilih tanggal operan terlebih dahulu', 'warning');
-            const jadwalEntries = Object.values(_allJadwalData || {})
+            const allJadwal = Object.values(_allJadwalData || {});
+            const jadwalEntries = allJadwal
                 .filter(i => i.tanggal === tglOperan)
                 .sort((a,b) => (a.jam||'').localeCompare(b.jam||''));
+            // Jadwal 7 hari ke depan dari tanggal operan
+            const maxDate = new Date(tglOperan + 'T00:00:00');
+            maxDate.setDate(maxDate.getDate() + 7);
+            const maxStr = maxDate.toISOString().split('T')[0];
+            const jadwalMendatang = allJadwal
+                .filter(i => i.tanggal && i.tanggal > tglOperan && i.tanggal <= maxStr)
+                .sort((a,b) => {
+                    const ta = (a.tanggal||'') + (a.jam||'');
+                    const tb = (b.tanggal||'') + (b.jam||'');
+                    return ta.localeCompare(tb);
+                });
             const dataPreview = {
                 tanggal: tglOperan,
                 shift: document.getElementById('opShift').value,
@@ -1577,7 +1599,8 @@
                 kepala_shift: document.getElementById('txtTtdAuto').innerText,
                 checklist: Array.from(document.querySelectorAll('.op-check')).map(c => ({ nama_tugas: c.dataset.task, status: c.checked })),
                 ttd_image: padOperan.isEmpty() ? '' : padOperan.toDataURL(),
-                jadwal_pasien: jadwalEntries
+                jadwal_pasien: jadwalEntries,
+                jadwal_mendatang: jadwalMendatang
             };
             window.viewPDF('operan', dataPreview);
         };
@@ -1730,56 +1753,176 @@
                 doc.addImage(logoB64, 'JPEG', logoX, logoY, width, height);
 
                 if (type === 'operan') {
-                    doc.setFontSize(13); doc.setFont(undefined, 'bold');
-                    doc.text("LAPORAN OPERAN DINAS RADIOLOGI", 105, 14, { align: 'center' });
-                    doc.setFontSize(9); doc.setFont(undefined, 'normal');
-                    doc.text(`RS MITRA PLUMBON  |  Tanggal: ${data.tanggal}  |  Shift: ${data.shift || '-'}`, 105, 20, { align: 'center' });
-                    doc.line(14, 26, 196, 26);
-                    doc.autoTable({
-                        startY: 30,
-                        head: [['Jobdesk / Tugas Kepala Shift', 'Status']],
-                        body: (data.checklist || []).map(c => [c.nama_tugas, c.status ? "✓ SELESAI" : "✗ BELUM"]),
-                        styles: { fontSize: 9 },
-                        headStyles: { fillColor: [15, 23, 42] }
-                    });
-                    let finalY = doc.lastAutoTable.finalY + 8;
+                    // ── HEADER: Logo kiri atas sudah ditambahkan di atas (logoX=14, logoY=10)
+                    // ── JUDUL LAPORAN (tengah, di kanan logo)
+                    const headerRightX = 14 + width + 5; // mulai teks setelah logo
+                    doc.setFontSize(11); doc.setFont(undefined, 'bold');
+                    doc.setTextColor(10, 10, 10);
+                    doc.text("LAPORAN OPERAN DINAS DAN SUPERVISI HARIAN", 105, 14, { align: 'center' });
+                    doc.setFontSize(8.5); doc.setFont(undefined, 'normal');
+                    doc.setTextColor(80, 80, 80);
+                    doc.text("INSTALASI RADIOLOGI — RS MITRA PLUMBON", 105, 20, { align: 'center' });
 
-                    // Tabel Jadwal Pasien
-                    const jadwalRows = (data.jadwal_pasien || []);
-                    if (jadwalRows.length > 0) {
-                        doc.setFont(undefined, 'bold'); doc.setFontSize(9);
-                        doc.setFillColor(28, 150, 151);
-                        doc.rect(14, finalY, 182, 7, 'F');
-                        doc.setTextColor(255,255,255);
-                        doc.text(`Rencana Pemeriksaan — Jadwal Pasien Shift Ini (${jadwalRows.length} Pasien)`, 15, finalY + 5);
-                        doc.setTextColor(0,0,0);
-                        doc.autoTable({
-                            startY: finalY + 9,
-                            head: [['Tanggal', 'Jam', 'Jenis Pemeriksaan', 'Nama Pasien']],
-                            body: jadwalRows.map(j => [j.tanggal, j.jam || '-', j.periksa || '-', j.nama || '-']),
-                            styles: { fontSize: 8.5 },
-                            headStyles: { fillColor: [17, 156, 159] },
-                            columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 22 } }
-                        });
-                        finalY = doc.lastAutoTable.finalY + 8;
-                    } else {
-                        finalY += 2;
+                    // ── INFO STRIP: Tanggal | Shift | Kepala Shift
+                    const infoY = logoY + height + 4;
+                    doc.setFillColor(17, 156, 159);
+                    doc.rect(14, infoY, 182, 8, 'F');
+                    doc.setFont(undefined, 'bold'); doc.setFontSize(8.5);
+                    doc.setTextColor(255, 255, 255);
+
+                    // Format tanggal Indonesia
+                    function fmtTglIndo(tgl) {
+                        if (!tgl) return '-';
+                        const d = new Date(tgl + 'T00:00:00');
+                        const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
                     }
 
+                    const tglFormatted = fmtTglIndo(data.tanggal);
+                    const infoText = `Tanggal: ${tglFormatted}   |   Shift: ${data.shift || '-'}   |   Kepala Shift: ${data.kepala_shift || '-'}`;
+                    doc.text(infoText, 105, infoY + 5.5, { align: 'center' });
+                    doc.setTextColor(0, 0, 0);
+
+                    const tableStartY = infoY + 13;
+
+                    // ── 1. TABEL CEKLIS JOBDESK KEPALA SHIFT
                     doc.setFont(undefined, 'bold'); doc.setFontSize(9);
-                    doc.setTextColor(0,0,0);
-                    doc.text("Catatan Operan Dinas:", 14, finalY);
-                    doc.setFont(undefined, 'normal');
-                    const splitCatatan = doc.splitTextToSize(data.catatan || "-", 180);
-                    doc.text(splitCatatan, 14, finalY + 6);
-                    let sigY = finalY + 14 + (splitCatatan.length * 5);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(`Cirebon, ${data.tanggal}`, 130, sigY);
-                    doc.text("Kepala Shift,", 130, sigY + 6);
-                    if (data.ttd_image) {
-                        try { doc.addImage(data.ttd_image, 'PNG', 130, sigY + 8, 40, 18); } catch (e) { }
+                    doc.setFillColor(15, 23, 42);
+                    doc.rect(14, tableStartY - 1, 182, 6.5, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text("A.  CEKLIS JOBDESK KEPALA SHIFT", 16, tableStartY + 4);
+                    doc.setTextColor(0, 0, 0);
+
+                    doc.autoTable({
+                        startY: tableStartY + 7,
+                        head: [['No', 'Tugas / Jobdesk Kepala Shift', 'Status']],
+                        body: (data.checklist || []).map((c, idx) => [
+                            idx + 1,
+                            c.nama_tugas,
+                            c.status ? '✓  SELESAI' : '✗  BELUM'
+                        ]),
+                        styles: { fontSize: 8.5, cellPadding: 2.5 },
+                        headStyles: { fillColor: [15, 23, 42], textColor: [255,255,255], fontStyle: 'bold' },
+                        columnStyles: {
+                            0: { cellWidth: 12, halign: 'center' },
+                            2: { cellWidth: 28, halign: 'center',
+                                 fontStyle: 'bold',
+                                 textColor: (row) => row.raw === '✓  SELESAI' ? [5, 120, 80] : [180, 30, 30]
+                               }
+                        },
+                        bodyStyles: { textColor: [30, 30, 30] },
+                        alternateRowStyles: { fillColor: [245, 250, 251] },
+                        didParseCell: function(hookData) {
+                            if (hookData.column.index === 2 && hookData.section === 'body') {
+                                const val = hookData.cell.raw;
+                                if (val === '✓  SELESAI') hookData.cell.styles.textColor = [5, 120, 80];
+                                else hookData.cell.styles.textColor = [180, 30, 30];
+                            }
+                        }
+                    });
+                    let finalY = doc.lastAutoTable.finalY + 6;
+
+                    // ── 2. TABEL JADWAL PASIEN HARI INI
+                    const jadwalHariIni = (data.jadwal_pasien || []);
+                    doc.setFont(undefined, 'bold'); doc.setFontSize(9);
+                    doc.setFillColor(17, 156, 159);
+                    doc.rect(14, finalY, 182, 6.5, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(`B.  JADWAL PASIEN HARI INI — ${tglFormatted}  (${jadwalHariIni.length} Pasien)`, 16, finalY + 4.5);
+                    doc.setTextColor(0, 0, 0);
+
+                    if (jadwalHariIni.length > 0) {
+                        doc.autoTable({
+                            startY: finalY + 8,
+                            head: [['No', 'Tanggal', 'Jam', 'Jenis Pemeriksaan', 'Nama Pasien']],
+                            body: jadwalHariIni.map((j, idx) => [idx + 1, fmtTglIndo(j.tanggal), j.jam || '-', j.periksa || '-', j.nama || '-']),
+                            styles: { fontSize: 8.5, cellPadding: 2.5 },
+                            headStyles: { fillColor: [17, 156, 159], textColor: [255,255,255], fontStyle: 'bold' },
+                            columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 32 }, 2: { cellWidth: 18, halign: 'center' } },
+                            alternateRowStyles: { fillColor: [232, 245, 246] }
+                        });
+                        finalY = doc.lastAutoTable.finalY + 6;
+                    } else {
+                        doc.autoTable({
+                            startY: finalY + 8,
+                            body: [['Tidak ada jadwal pasien untuk hari ini']],
+                            styles: { fontSize: 8.5, halign: 'center', textColor: [150,150,150], fontStyle: 'italic' }
+                        });
+                        finalY = doc.lastAutoTable.finalY + 6;
                     }
-                    doc.text(data.kepala_shift || '-', 130, sigY + 30);
+
+                    // ── 3. TABEL JADWAL 7 HARI KE DEPAN
+                    const jadwalMendatang = (data.jadwal_mendatang || []);
+                    doc.setFont(undefined, 'bold'); doc.setFontSize(9);
+                    doc.setFillColor(245, 131, 32);
+                    doc.rect(14, finalY, 182, 6.5, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(`C.  JADWAL PASIEN MENDATANG — 7 Hari ke Depan  (${jadwalMendatang.length} Pasien)`, 16, finalY + 4.5);
+                    doc.setTextColor(0, 0, 0);
+
+                    if (jadwalMendatang.length > 0) {
+                        doc.autoTable({
+                            startY: finalY + 8,
+                            head: [['No', 'Tanggal', 'Jam', 'Jenis Pemeriksaan', 'Nama Pasien', 'Sisa Hari']],
+                            body: jadwalMendatang.map((j, idx) => {
+                                const tglE = new Date(j.tanggal + 'T00:00:00');
+                                const tglT = new Date(data.tanggal + 'T00:00:00');
+                                const diff = Math.round((tglE - tglT) / (1000*60*60*24));
+                                return [idx + 1, fmtTglIndo(j.tanggal), j.jam || '-', j.periksa || '-', j.nama || '-', diff === 1 ? 'Besok' : diff + ' hari'];
+                            }),
+                            styles: { fontSize: 8.5, cellPadding: 2.5 },
+                            headStyles: { fillColor: [245, 131, 32], textColor: [255,255,255], fontStyle: 'bold' },
+                            columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 32 }, 2: { cellWidth: 18, halign: 'center' }, 5: { cellWidth: 22, halign: 'center' } },
+                            alternateRowStyles: { fillColor: [255, 248, 240] }
+                        });
+                        finalY = doc.lastAutoTable.finalY + 6;
+                    } else {
+                        doc.autoTable({
+                            startY: finalY + 8,
+                            body: [['Tidak ada jadwal pasien dalam 7 hari ke depan']],
+                            styles: { fontSize: 8.5, halign: 'center', textColor: [150,150,150], fontStyle: 'italic' }
+                        });
+                        finalY = doc.lastAutoTable.finalY + 6;
+                    }
+
+                    // ── 4. CATATAN OPERAN DINAS
+                    // Cek apakah perlu halaman baru
+                    if (finalY > 230) { doc.addPage(); finalY = 15; }
+                    doc.setFont(undefined, 'bold'); doc.setFontSize(9);
+                    doc.setFillColor(15, 23, 42);
+                    doc.rect(14, finalY, 182, 6.5, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text("D.  CATATAN OPERAN DINAS", 16, finalY + 4.5);
+                    doc.setTextColor(0, 0, 0);
+                    finalY += 9;
+                    doc.setDrawColor(200, 200, 200);
+                    doc.rect(14, finalY, 182, 22, 'S');
+                    doc.setFont(undefined, 'normal'); doc.setFontSize(8.5);
+                    const splitCatatan = doc.splitTextToSize(data.catatan || "-", 176);
+                    doc.text(splitCatatan, 17, finalY + 6);
+                    finalY += 26;
+
+                    // ── 5. TANDA TANGAN
+                    if (finalY > 240) { doc.addPage(); finalY = 15; }
+                    doc.setFont(undefined, 'normal'); doc.setFontSize(9);
+                    doc.setTextColor(30, 30, 30);
+                    doc.text(`Cirebon, ${tglFormatted}`, 142, finalY, { align: 'center' });
+                    finalY += 6;
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Kepala Shift,', 142, finalY, { align: 'center' });
+                    finalY += 4;
+                    if (data.ttd_image) {
+                        try { doc.addImage(data.ttd_image, 'PNG', 116, finalY, 52, 22); } catch (e) { }
+                        finalY += 24;
+                    } else {
+                        finalY += 24;
+                    }
+                    doc.setFont(undefined, 'bold'); doc.setFontSize(9);
+                    doc.text(data.kepala_shift || '-', 142, finalY, { align: 'center' });
+                    // Garis bawah nama
+                    const namaWidth = doc.getTextWidth(data.kepala_shift || '-');
+                    doc.setDrawColor(30, 30, 30);
+                    doc.line(142 - namaWidth/2, finalY + 1, 142 + namaWidth/2, finalY + 1);
                 } else {
                     doc.setFontSize(13); doc.setFont(undefined, 'bold');
                     doc.text("LAPORAN PMI — MONITORING MUTU ALAT", 105, 14, { align: 'center' });
